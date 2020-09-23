@@ -1,0 +1,4283 @@
+[TIP]validate cc number
+Private Sub Command1_Click()
+Dim x As Integer
+Dim y As Integer
+Dim iMultiplier As Integer
+Dim dTotal As Double
+Dim sRC As String
+    Text1 = Trim(Text1)
+    iMultiplier = 1
+    dTotal = 0
+    For x = Len(Text1) To 1 Step -1
+        sRC = CStr((CInt(Mid(Text1, x, 1)) * iMultiplier))
+        For y = 1 To Len(sRC)
+            dTotal = dTotal + CInt(Mid(sRC, y, 1))
+        Next y
+        iMultiplier = IIf(iMultiplier = 1, 2, 1)
+    Next x
+    If dTotal Mod 10 = 0 Then
+        Label1 = "Valid"
+    Else
+        Label1 = "Invalid"
+    End If
+End Sub
+[TIP]create file path
+x = CreatePath("c:\program files\new app\database\references")
+
+Declare Function MakeSureDirectoryPathExists Lib _
+    "IMAGEHLP.DLL" (ByVal DirPath As String) As Long
+
+
+Public Function CreatePath(NewPath) As Boolean
+
+    'Add a trailing slash if none
+    If Right(NewPath, 1) <> "\" Then
+        NewPath = NewPath & "\"
+    End If
+    
+    'Call API
+    If MakeSureDirectoryPathExists(NewPath) <> 0 Then
+        'No errors, return True
+        CreatePath = True
+    End If
+
+End Function
+[TIP]quicksort numeric
+Public Sub QuickSortNumericAscending(narray() As Long, inLow As Long, inHi As Long)
+
+   Dim pivot As Long
+   Dim tmpSwap As Long
+   Dim tmpLow As Long
+   Dim tmpHi  As Long
+   
+   tmpLow = inLow
+   tmpHi = inHi
+   
+   pivot = narray((inLow + inHi) / 2)
+
+   While (tmpLow <= tmpHi)
+       
+      While (narray(tmpLow) < pivot And tmpLow < inHi)
+         tmpLow = tmpLow + 1
+      Wend
+   
+      While (pivot < narray(tmpHi) And tmpHi > inLow)
+         tmpHi = tmpHi - 1
+      Wend
+
+      If (tmpLow <= tmpHi) Then
+         tmpSwap = narray(tmpLow)
+         narray(tmpLow) = narray(tmpHi)
+         narray(tmpHi) = tmpSwap
+         tmpLow = tmpLow + 1
+         tmpHi = tmpHi - 1
+      End If
+      
+   Wend
+    
+   If (inLow < tmpHi) Then QuickSortNumericAscending narray(), inLow, tmpHi
+   If (tmpLow < inHi) Then QuickSortNumericAscending narray(), tmpLow, inHi
+
+End Sub
+
+[TIP]quicksort string
+Public Sub QuickSortStringsAscending(sarray() As String, inLow As Long, inHi As Long)
+  
+   Dim pivot As String
+   Dim tmpSwap As String
+   Dim tmpLow As Long
+   Dim tmpHi As Long
+   
+   tmpLow = inLow
+   tmpHi = inHi
+   
+   pivot = sarray((inLow + inHi) / 2)
+  
+   While (tmpLow <= tmpHi)
+   
+      While (sarray(tmpLow) < pivot And tmpLow < inHi)
+         tmpLow = tmpLow + 1
+      Wend
+      
+      While (pivot < sarray(tmpHi) And tmpHi > inLow)
+         tmpHi = tmpHi - 1
+      Wend
+      
+      If (tmpLow <= tmpHi) Then
+         tmpSwap = sarray(tmpLow)
+         sarray(tmpLow) = sarray(tmpHi)
+         sarray(tmpHi) = tmpSwap
+         tmpLow = tmpLow + 1
+         tmpHi = tmpHi - 1
+      End If
+   
+   Wend
+  
+   If (inLow < tmpHi) Then QuickSortStringsAscending sarray(), inLow, tmpHi
+   If (tmpLow < inHi) Then QuickSortStringsAscending sarray(), tmpLow, inHi
+  
+End Sub
+
+[TIP]play a wav file - working
+Private Declare Function sndPlaySound Lib "winmm" Alias "sndPlaySoundA" (ByVal lpszSoundName As String, ByVal uFlags As Long) As Long
+Const RedAlert As String = "H:\media\mkt Redalert.wav"
+
+sndPlaySound RedAlert, 2
+
+[TIP]colour code to RGB
+Public Function ColorCodeToRGB(lColorCode As Long) As Integer()
+Dim iOut(3) As Integer
+Dim lColor As Long
+    lColor = lColorCode      'work long
+    iOut(0) = lColor Mod &H100  'get red component
+    lColor = lColor \ &H100  'divide
+    iOut(1) = lColor Mod &H100 'get green component
+    lColor = lColor \ &H100  'divide
+    iOut(2) = lColor Mod &H100 'get blue component
+
+    ColorCodeToRGB = iOut
+End Function
+[TIP]email using CDO 1.21 and attachments
+Sub EmailUser(From As String, SendTo As String, Subject As String, _
+    EmailText As String, Optional AttachmentPath As String, _
+    Optional Attachment As String, Optional CC As String)
+Const constRoutine As String = "SendEmail"
+
+Dim cdoSession As Object
+Dim oFolder As Object
+Dim oMsg As Object
+Dim oRcpt As Object
+Dim oMessages As Object
+Dim objAttachent As Object
+
+
+
+    Set cdoSession = CreateObject("MAPI.Session")
+    cdoSession.Logon "MS Exchange Settings"
+    Set oFolder = cdoSession.Outbox
+    Set oMessages = oFolder.Messages
+    Set oMsg = oMessages.Add
+    Set oRcpt = oMsg.Recipients
+    oRcpt.Add , "SMTP:" & SendTo, CdoTo
+    oRcpt.Resolve
+    oMsg.Subject = Subject
+    oMsg.Text = EmailText
+    If Not IsMissing(AttachmentPath) And Not IsMissing(Attachment) Then
+        Set objAttachent = oMsg.Attachments.Add
+        objAttachent.Type = CdoFileData
+        objAttachent.Position = -1
+        objAttachent.Source = AttachmentPath & "\" & Attachment
+        objAttachent.Name = Attachment
+    End If
+    
+    oMsg.Update
+    
+    oMsg.Send
+    cdoSession.Logoff
+
+ExitMe:
+    Set objAttachent = Nothing
+    Set cdoSession = Nothing
+    Set oFolder = Nothing
+    Set oMsg = Nothing
+    Set oRcpt = Nothing
+    Set oMessages = Nothing
+    Exit Sub
+
+ErrorHandler:
+    P11D_MsgBox "There was an error attempting to email this Car Calc.  Error detail follows" & vbCrLf & vbCrLf & Err.Description & " (" & Err.Number & ")" & vbCrLf & vbCrLf & "Please contact MIS Finance && Administration on extension 3456 to resolve this issue", 99, App.Title
+    Resume ExitMe
+
+End Sub
+
+[TIP]Get file name from path
+
+Function GetFileName(sIn As String)
+GetFileName = ""
+If InStr(sIn, "\") = 0 Then Exit Function
+Dim xPos As Long
+    xPos = InStrRev(sIn, "\")
+    GetFileName = Mid(sIn, xPos + 1)
+End Function
+
+[TIP]get file path
+Function GetFilePath(sIn As String)
+GetFilePath = ""
+If InStr(sIn, "\") = 0 Then Exit Function
+Dim xPos As Long
+    xPos = InStrRev(sIn, "\")
+    GetFilePath = Left(sIn, xPos - 1)
+End Function
+
+[TIP]kill a task - working!!
+Option Explicit
+
+Public Declare Function GetVersion Lib "kernel32" () As Long
+Public Declare Function GetCurrentProcess Lib "kernel32" () As Long
+Public Declare Function OpenProcessToken Lib "advapi32" (ByVal ProcessHandle As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
+Public Declare Function LookupPrivilegeValue Lib "advapi32" Alias "LookupPrivilegeValueA" (ByVal lpSystemName As String, ByVal lpName As String, lpLuid As LUID) As Long
+Public Declare Function AdjustTokenPrivileges Lib "advapi32" (ByVal TokenHandle As Long, ByVal DisableAllPrivileges As Long, NewState As TOKEN_PRIVILEGES, ByVal BufferLength As Long, PreviousState As Any, ReturnLength As Any) As Long
+Public Declare Function TerminateProcess Lib "kernel32" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
+Public Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Public Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+Public Declare Function CreateToolhelp32Snapshot Lib "kernel32" (ByVal dwFlags As Long, ByVal th32ProcessID As Long) As Long
+Public Declare Function Process32First Lib "kernel32" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
+Public Declare Function Process32Next Lib "kernel32" (ByVal hSnapshot As Long, ByRef lppe As PROCESSENTRY32) As Long
+Public Declare Function EnumProcesses Lib "psapi.dll" (ByRef lpidProcess As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
+Public Declare Function GetModuleFileNameExA Lib "psapi.dll" (ByVal hProcess As Long, ByVal hModule As Long, ByVal ModuleName As String, ByVal nSize As Long) As Long
+Public Declare Function EnumProcessModules Lib "psapi.dll" (ByVal hProcess As Long, ByRef lphModule As Long, ByVal cb As Long, ByRef cbNeeded As Long) As Long
+
+Public Const MAX_PATH = 260
+Public Const PROCESS_QUERY_INFORMATION = 1024
+Public Const PROCESS_VM_READ = 16
+Public Const TOKEN_ADJUST_PRIVILEGES = &H20
+Public Const TOKEN_QUERY = &H8
+Public Const SE_PRIVILEGE_ENABLED = &H2
+Public Const PROCESS_ALL_ACCESS = &H1F0FFF
+
+Public Type LUID
+   lowpart As Long
+   highpart As Long
+End Type
+
+Public Type TOKEN_PRIVILEGES
+    PrivilegeCount As Long
+    LuidUDT As LUID
+    Attributes As Long
+End Type
+
+Public Type PROCESSENTRY32
+    dwSize As Long
+    cntUsage As Long
+    th32ProcessID As Long
+    th32DefaultHeapID As Long
+    th32ModuleID As Long
+    cntThreads As Long
+    th32ParentProcessID As Long
+    pcPriClassBase As Long
+    dwFlags As Long
+    szExeFile As String * MAX_PATH
+End Type
+Sub killoutstandingexcels(ByRef lBeforePIDs() As Long, ByRef lAfterPIDs() As Long)
+Dim px As Long, py As Long
+Dim bWasThere As Boolean
+    For px = 0 To UBound(lAfterPIDs)
+        bWasThere = False
+        For py = 0 To UBound(lBeforePIDs)
+            If lBeforePIDs(py) = lAfterPIDs(px) Then
+                bWasThere = True
+                Exit For
+            End If
+        Next py
+        If Not bWasThere Then KillProcess lAfterPIDs(px)
+        DoEvents
+    Next px
+End Sub
+Function KillProcess(ByVal hProcessID As Long, Optional ByVal ExitCode As Long) _
+    As Boolean
+    Dim hToken As Long
+    Dim hProcess As Long
+    Dim tp As TOKEN_PRIVILEGES
+    
+    If GetVersion() >= 0 Then
+        If OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES Or _
+            TOKEN_QUERY, hToken) = 0 Then
+            GoTo CleanUp
+        End If
+        
+        If LookupPrivilegeValue("", "SeDebugPrivilege", tp.LuidUDT) = 0 Then
+            GoTo CleanUp
+        End If
+    
+        tp.PrivilegeCount = 1
+        tp.Attributes = SE_PRIVILEGE_ENABLED
+    
+        If AdjustTokenPrivileges(hToken, False, tp, 0, ByVal 0&, _
+            ByVal 0&) = 0 Then
+            GoTo CleanUp
+        End If
+    End If
+    
+    hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, hProcessID)
+    If hProcess Then
+        KillProcess = (TerminateProcess(hProcess, ExitCode) <> 0)
+        CloseHandle hProcess
+    End If
+    
+    If GetVersion() >= 0 Then
+        tp.Attributes = 0
+        AdjustTokenPrivileges hToken, False, tp, 0, ByVal 0&, ByVal 0&
+        
+CleanUp:
+        If hToken Then CloseHandle hToken
+    End If
+End Function
+
+Function FindAllExcelProcessIDs() As Long()
+
+    Const MaxPIDs = 256
+    Dim dwPIDs(1 To MaxPIDs) As Long
+    Dim szPIDs As Long
+    Dim cb2 As Long
+    Dim i As Long
+    Dim hPr As Long
+    Dim cproc As Long
+    Dim Modules(1 To MaxPIDs) As Long
+    Dim lr As Long
+    Dim mName As String * MAX_PATH
+    Dim lPIDs() As Long
+    
+    ReDim lPIDs(0)
+    szPIDs = MaxPIDs * 4
+    If EnumProcesses(dwPIDs(1), szPIDs, cb2) <> 0 Then
+        cproc = cb2 / 4
+        For i = 1 To cproc
+            hPr = OpenProcess(PROCESS_QUERY_INFORMATION _
+               Or PROCESS_VM_READ, 0, dwPIDs(i))
+            If hPr <> 0 Then
+                If EnumProcessModules(hPr, Modules(1), MaxPIDs, cb2) <> 0 Then
+                    mName = Space(MAX_PATH)
+                    lr = GetModuleFileNameExA(hPr, Modules(1), mName, MAX_PATH)
+                    If (mName <> "") And InStr(UCase(mName), "EXCEL.EXE") > 0 Then
+                        ReDim Preserve lPIDs(UBound(lPIDs) + 1)
+                        lPIDs(UBound(lPIDs) - 1) = dwPIDs(i)
+                    End If
+                End If
+            End If
+            CloseHandle (hPr)
+        Next i
+    End If
+    If UBound(lPIDs) > 0 Then
+        ReDim Preserve lPIDs(UBound(lPIDs) - 1)
+    End If
+    FindAllExcelProcessIDs = lPIDs()
+End Function
+Function C23(A As String) As String
+Dim i As Long
+i = InStr(1, A, Chr(0), vbBinaryCompare)
+If (i <> 0) Then
+    C23 = Mid(A, 1, i - 1)
+Else
+    C23 = ""
+End If
+End Function
+
+
+[TIP]list running processes class
+Private Const TH32CS_SNAPPROCESS As Long = 2&
+Private Const MAX_PATH As Integer = 260
+
+
+Private Type PROCESSENTRY32
+    dwSize As Long
+    cntUsage As Long
+    th32ProcessID As Long
+    th32DefaultHeapID As Long
+    th32ModuleID As Long
+    cntThreads As Long
+    th32ParentProcessID As Long
+    pcPriClassBase As Long
+    dwFlags As Long
+    szExeFile As String * MAX_PATH
+    End Type
+
+
+Private Declare Function CreateToolhelpSnapshot Lib "kernel32" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, ByVal lProcessID As Long) As Long
+
+
+Private Declare Function ProcessFirst Lib "kernel32" Alias "Process32First" (ByVal hSnapShot As Long, uProcess As PROCESSENTRY32) As Long
+
+
+Private Declare Function ProcessNext Lib "kernel32" Alias "Process32Next" (ByVal hSnapShot As Long, uProcess As PROCESSENTRY32) As Long
+
+
+Private Declare Sub CloseHandle Lib "kernel32" (ByVal hPass As Long)
+Dim ListOfActiveProcess() As PROCESSENTRY32
+
+
+
+
+
+
+Public Function szExeFile(ByVal Index As Long) As String
+    szExeFile = ListOfActiveProcess(Index).szExeFile
+End Function
+
+
+Public Function dwFlags(ByVal Index As Long) As Long
+    dwFlags = ListOfActiveProcess(Index).dwFlags
+End Function
+
+
+Public Function pcPriClassBase(ByVal Index As Long) As Long
+    pcPriClassBase = ListOfActiveProcess(Index).pcPriClassBase
+End Function
+
+
+Public Function th32ParentProcessID(ByVal Index As Long) As Long
+    th32ParentProcessID = ListOfActiveProcess(Index).th32ParentProcessID
+End Function
+
+
+Public Function cntThreads(ByVal Index As Long) As Long
+    cntThreads = ListOfActiveProcess(Index).cntThreads
+End Function
+
+
+Public Function thModuleID(ByVal Index As Long) As Long
+    thModuleID = ListOfActiveProcess(Index).th32ModuleID
+End Function
+
+
+Public Function th32DefaultHeapID(ByVal Index As Long) As Long
+    th32DefaultHeapID = ListOfActiveProcess(Index).th32DefaultHeapID
+End Function
+
+
+Public Function th32ProcessID(ByVal Index As Long) As Long
+    th32ProcessID = ListOfActiveProcess(Index).th32ProcessID
+End Function
+
+
+Public Function cntUsage(ByVal Index As Long) As Long
+    cntUsage = ListOfActiveProcess(Index).cntUsage
+End Function
+
+
+Public Function dwSize(ByVal Index As Long) As Long
+    dwSize = ListOfActiveProcess(Index).dwSize
+End Function
+
+
+Public Function GetActiveProcess() As Long
+    Dim hToolhelpSnapshot As Long
+    Dim tProcess As PROCESSENTRY32
+    Dim r As Long, i As Integer
+    hToolhelpSnapshot = CreateToolhelpSnapshot(TH32CS_SNAPPROCESS, 0&)
+
+
+    If hToolhelpSnapshot = 0 Then
+        GetActiveProcess = 0
+        Exit Function
+    End If
+
+
+    With tProcess
+        .dwSize = Len(tProcess)
+        r = ProcessFirst(hToolhelpSnapshot, tProcess)
+        ReDim Preserve ListOfActiveProcess(20)
+
+
+        Do While r
+            i = i + 1
+            If i Mod 20 = 0 Then ReDim Preserve ListOfActiveProcess(i + 20)
+            ListOfActiveProcess(i) = tProcess
+            r = ProcessNext(hToolhelpSnapshot, tProcess)
+        Loop
+    End With
+    GetActiveProcess = i
+    Call CloseHandle(hToolhelpSnapshot)
+End Function
+
+[TIP]kill process
+Private Type LUID
+   lowpart As Long
+   highpart As Long
+End Type
+
+Private Type TOKEN_PRIVILEGES
+    PrivilegeCount As Long
+    LuidUDT As LUID
+    Attributes As Long
+End Type
+
+Const TOKEN_ADJUST_PRIVILEGES = &H20
+Const TOKEN_QUERY = &H8
+Const SE_PRIVILEGE_ENABLED = &H2
+Const PROCESS_ALL_ACCESS = &H1F0FFF
+
+Private Declare Function GetVersion Lib "kernel32" () As Long
+Private Declare Function GetCurrentProcess Lib "kernel32" () As Long
+Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As _
+    Long
+Private Declare Function OpenProcessToken Lib "advapi32" (ByVal ProcessHandle _
+    As Long, ByVal DesiredAccess As Long, TokenHandle As Long) As Long
+Private Declare Function LookupPrivilegeValue Lib "advapi32" Alias _
+    "LookupPrivilegeValueA" (ByVal lpSystemName As String, _
+    ByVal lpName As String, lpLuid As LUID) As Long
+Private Declare Function AdjustTokenPrivileges Lib "advapi32" (ByVal _
+    TokenHandle As Long, ByVal DisableAllPrivileges As Long, _
+    NewState As TOKEN_PRIVILEGES, ByVal BufferLength As Long, _
+    PreviousState As Any, ReturnLength As Any) As Long
+Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As _
+    Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Private Declare Function TerminateProcess Lib "kernel32" (ByVal hProcess As _
+    Long, ByVal uExitCode As Long) As Long
+
+
+Function KillProcess(ByVal hProcessID As Long, Optional ByVal ExitCode As Long) _
+    As Boolean
+    Dim hToken As Long
+    Dim hProcess As Long
+    Dim tp As TOKEN_PRIVILEGES
+    
+    ' Windows NT/2000 require a special treatment
+    ' to ensure that the calling process has the
+    ' privileges to shut down the system
+    
+    ' under NT the high-order bit (that is, the sign bit)
+    ' of the value retured by GetVersion is cleared
+    If GetVersion() >= 0 Then
+        ' open the tokens for the current process
+        ' exit if any error
+        If OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES Or _
+            TOKEN_QUERY, hToken) = 0 Then
+            GoTo CleanUp
+        End If
+        
+        ' retrieves the locally unique identifier (LUID) used
+        ' to locally represent the specified privilege name
+        ' (first argument = "" means the local system)
+        ' Exit if any error
+        If LookupPrivilegeValue("", "SeDebugPrivilege", tp.LuidUDT) = 0 Then
+            GoTo CleanUp
+        End If
+    
+        ' complete the TOKEN_PRIVILEGES structure with the # of
+        ' privileges and the desired attribute
+        tp.PrivilegeCount = 1
+        tp.Attributes = SE_PRIVILEGE_ENABLED
+    
+        ' try to acquire debug privilege for this process
+        ' exit if error
+        If AdjustTokenPrivileges(hToken, False, tp, 0, ByVal 0&, _
+            ByVal 0&) = 0 Then
+            GoTo CleanUp
+        End If
+    End If
+    
+    ' now we can finally open the other process
+    ' while having complete access on its attributes
+    ' exit if any error
+    hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, hProcessID)
+    If hProcess Then
+        ' call was successful, so we can kill the application
+        ' set return value for this function
+        KillProcess = (TerminateProcess(hProcess, ExitCode) <> 0)
+        ' close the process handle
+        CloseHandle hProcess
+    End If
+    
+    If GetVersion() >= 0 Then
+        ' under NT restore original privileges
+        tp.Attributes = 0
+        AdjustTokenPrivileges hToken, False, tp, 0, ByVal 0&, ByVal 0&
+        
+CleanUp:
+        If hToken Then CloseHandle hToken
+    End If
+End Function
+[TIP]kill task
+Private Declare Function FindWindow& Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String)
+Private Declare Function GetWindowThreadProcessId& Lib "user32" (ByVal hwnd As Long, lpdwProcessId As Long)
+Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Private Declare Function TerminateProcess& Lib "kernel32" (ByVal hProcess As Long, ByVal uExitCode As Long)
+
+Public Function LaunchApp(Path As String) As Long
+    LaunchApp = Shell(Path, vbNormalNoFocus)
+End Function
+
+Public Function IsAppRunning(WindowClassName As String) As Boolean
+    Dim hw&
+    hw& = FindWindow(WindowClassName, vbNullString)
+    IsAppRunning = (hw& <> 0)
+End Function
+
+Public Function FindWindowByClass(WindowClassName As String) As Long
+    FindWindowByClass = FindWindow(WindowClassName, vbNullString)
+End Function
+
+Public Function FindProcessByWindowClass(WindowClassName As String) As Long
+    Dim pid&
+    GetWindowThreadProcessId FindWindowByClass(WindowClassName), pid&
+    FindProcessByWindowClass = pid&
+End Function
+
+Public Sub KillProcessById(ProcessId As Long)
+    Dim hp&
+    hp& = OpenProcess(1&, -1&, ProcessId)
+    TerminateProcess hp&, 0&
+End Sub
+
+[TIP]Print a textbox
+Printer.Print Text1.Text
+Printer.EndDoc
+
+[TIP]Add/remove network connections
+
+    Public Enum WNetResultConstants
+        WN_SUCCESS = 0
+        WN_NET_ERROR = 2
+        WN_BAD_PASSWORD = 6
+        WN_ERROR_BAD_DEVICE = 1200&
+        WN_ERROR_CONNECTION_UNAVAIL = 1201&
+        WN_ERROR_EXTENDED_ERROR = 1208&
+        WN_ERROR_MORE_DATA = 234
+        WN_ERROR_NOT_SUPPORTED = 50&
+        WN_ERROR_NO_NET_OR_BAD_PATH = 1203&
+        WN_ERROR_NO_NETWORK = 1222&
+        WN_ERROR_NOT_CONNECTED = 2250&
+    End Enum
+'
+' API Calls
+'
+   Private Declare Function GetDesktopWindow Lib "user32" () As Long
+
+   Private Declare Function WNetAddConnection Lib "mpr.dll" Alias "WNetAddConnectionA" _
+                            (ByVal lpszNetPath As String, ByVal lpszPassword As String, _
+                             ByVal lpszLocalName As String) As Long
+
+   Private Declare Function WNetCancelConnection Lib "mpr.dll" Alias "WNetCancelConnectionA" _
+                            (ByVal lpszName As String, ByVal bForce As Long) As Long
+
+   Private Declare Function WNetConnectionDialog Lib "mpr.dll" _
+                            (ByVal hwnd As Long, ByVal dwType As Long) As Long
+
+
+Public Function AddNetworkConnection(sShareName As String, sPassword As String, sDriveLetter As String) As WNetResultConstants
+    AddNetworkConnection = WNetAddConnection(sShareName, sPassword, sDriveLetter)
+End Function
+
+Public Function RemoveNetworkConnection(sDriveLetter As String, bForce As Boolean) As WNetResultConstants
+    RemoveNetworkConnection = WNetCancelConnection(sDriveLetter, CLng(bForce))
+End Function
+
+Public Sub ShowMapDrivesDialog(Optional hWndOwner As Long = 0)
+    If hWndOwner = 0 Then
+        hWndOwner = GetDesktopWindow()
+    End If
+    WNetConnectionDialog hWndOwner, 1
+End Sub
+ 
+
+[TIP]Generate a Temporary Filename
+Private Declare Function GetTempFileNameAPI Lib "kernel32" Alias "GetTempFileNameA" _
+			 (ByVal lpszPath As String, ByVal lpPrefixString As String, _
+			  ByVal wUnique As Long, ByVal lpTempFileName As String) As Long
+
+Public Function GetTempFileName(Optional ByVal sPrefixString As String = "~TM", _
+				Optional ByVal sPath As String = "") As String
+    Dim nRet As Long
+    Dim lpTempFileName As String
+
+    If sPath = "" Then
+        sPath = CurDir$
+    End If
+
+    lpTempFileName = Space$(1024)
+
+    nRet = GetTempFileNameAPI(sPath, sPrefixString, 0, lpTempFileName)
+
+    If nRet = 0 Then
+        GetTempFileName = ""
+    Else
+        GetTempFileName = Trim$(lpTempFileName)
+    End If
+End Function
+
+[TIP]control panel shell parameters
+Control Panel (CONTROL.EXE)
+Control Panel: 
+    rundll32.exe shell32.dll,Control_RunDLL
+
+Accessability Settings (ACCESS.CPL) 
+Accessability Properties (Keyboard): 
+    rundll32.exe shell32.dll,Control_RunDLL access.cpl,,1
+Accessability Properties (Sound): 
+    rundll32.exe shell32.dll,Control_RunDLL access.cpl,,2
+Accessability Properties (Display): 
+    rundll32.exe shell32.dll,Control_RunDLL access.cpl,,3
+Accessability Properties (Mouse): 
+    rundll32.exe shell32.dll,Control_RunDLL access.cpl,,4
+Accessability Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL access.cpl,,5
+
+Add/Remove Programs (APPWIZ.CPL)
+Add/Remove Programs Properties (Install/Uninstall): 
+    rundll32.exe shell32.dll,Control_RunDLL appwiz.cpl,,1
+Add/Remove Programs Properties (Windows Setup): 
+    rundll32.exe shell32.dll,Control_RunDLL appwiz.cpl,,2
+Add/Remove Programs Properties (Startup Disk): 
+    rundll32.exe shell32.dll,Control_RunDLL appwiz.cpl,,3
+
+Display Settings (DESK.CPL)
+Display Properties (Background): 
+    rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,0
+Display Properties (Screen Saver): 
+    rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,1
+Display Properties (Appearance): 
+    rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,2
+Display Properties (Settings): 
+    rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,3
+Display Properties (Install Screen Saver): 
+    rundll32.exe desk.cpl,InstallScreenSaver %1
+    (opens .scr at location specified by %1 in preview window)
+
+FindFast Settings (FINDFAST.CPL) 
+Find Fast Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL findfast.cpl
+
+Internet Settings (INETCPL.CPL)
+Internet Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0
+Internet Properties (Security): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,1
+Internet Properties (Content): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,2
+Internet Properties (Connection): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,3
+Internet Properties (Programs): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,4
+Internet Properties (Advanced): 
+    rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,5
+
+Regional Settings (INTL.CPL)
+Regional Settings Properties (Regional Settings): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,0
+Regional Settings Properties (Number): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,1
+Regional Settings Properties (Currency): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,2
+Regional Settings Properties (Time): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,3
+Regional Settings Properties (Date): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,4
+Regional Settings Properties (Input Locales): 
+    rundll32.exe shell32.dll,Control_RunDLL intl.cpl,,5
+
+Joystick Settings (JOY.CPL)
+Joystick Properties (Joystick): 
+    rundll32.exe shell32.dll,Control_RunDLL joy.cpl
+
+Mouse/Keyboard/Printers/Fonts Settings (MAIN.CPL)
+Mouse Properties: 
+    rundll32.exe shell32.dll,Control_RunDLL main.cpl @0
+Keyboard Properties: 
+    rundll32.exe shell32.dll,Control_RunDLL main.cpl @1
+Printers: 
+    rundll32.exe shell32.dll,Control_RunDLL main.cpl @2
+Fonts: 
+    rundll32.exe shell32.dll,Control_RunDLL main.cpl @3
+
+Mail and Fax Settings (MLCFG32.CPL)
+Microsoft Exchange/Outlook Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL mlcfg32.cpl
+
+Multimedia/Sounds Settings (MMSYS.CPL)
+Multimedia Properties (Audio): 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl,,0
+Multimedia Properties (Video): 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl,,1
+Multimedia Properties (MIDI): 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl,,2
+Multimedia Properties (CD Music): 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl,,3
+Multimedia Properties (Advanced/Devices): 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl,,4
+ 
+Sounds Properties: 
+    rundll32.exe shell32.dll,Control_RunDLL mmsys.cpl @1
+
+Modem Settings (MODEM.CPL)
+Modem Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL modem.cpl
+
+Network Settings (NETCPL.CPL / NCPA.DLL)
+Network (Configuration): 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL netcpl.cpl
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL ncpa.cpl
+ 
+Dial-up Networking Wizard
+    Win9x: rundll32.exe rnaui.dll,RnaWizard
+ 
+Create Share Dialog
+    WinNT: rundll32.exe ntlanui.dll,ShareCreate
+Manage Shares Dialog
+    WinNT: rundll32.exe ntlanui.dll,ShareManage
+
+ODBC Settings (ODBCCP32.CPL)
+ODBC Data Source Administrator (General): 
+    rundll32.exe shell32.dll,Control_RunDLL odbccp32.cpl
+
+Password Settings (PASSWORD.CPL)
+Password Properties (Change Passwords): 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL password.cpl
+
+COM Ports Settings (PORTS.CPL)
+COM Ports Properties (General): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL ports.cpl
+
+Server Properties (SRVMGR.CPL)
+Server Properties (General): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL srvmgr.cpl
+Services dialog: 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL srvmgr.cpl Services
+
+System Settings (SYSDM.CPL)
+System Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,0
+System Properties (Device Manager): 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,1
+System Properties (Performance): 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,3
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,1
+System Properties (Environment): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,2
+System Properties (Startup/Shutdown): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,3
+System Properties (Hardware Profiles): 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,2
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,4
+System Properties (User Profiles): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl,,5
+ 
+Add New Hardware Wizard: 
+    Win9x: rundll32.exe shell32.dll,Control_RunDLL sysdm.cpl @1
+Add New Printer Wizard: 
+    Win9x: rundll32.exe shell32.dll,SHHelpShortcuts_RunDLL AddPrinter
+
+Telephony Settings (TELEPHON.CPL)
+Dialing Properties (My Location / Drivers): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL telephon.cpl
+
+Themes Settings (THEMES.CPL)
+Themes Properties (General): 
+    rundll32.exe shell32.dll,Control_RunDLL themes.cpl
+
+Time and Date Settings (TIMEDATE.CPL)
+Date/Time Properties: 
+    rundll32.exe shell32.dll,Control_RunDLL timedate.cpl
+Choose Time Zone: 
+    rundll32.exe shell32.dll,Control_RunDLL timedate.cpl,,/f
+
+TweakUI Settings (TWEAKUI.CPL)
+TweakUI Dialog (General): 
+    rundll32.exe shell32.dll,Control_RunDLL tweakui.cpl
+
+UPS Settings (UPS.CPL)
+Uninteruptable Power Supply Properties (General): 
+    WinNT: rundll32.exe shell32.dll,Control_RunDLL ups.cpl
+
+Microsoft Mail Postoffice Settings (WGPOCPL.CPL)
+Microsoft Workgroup Postoffice Admin: 
+    rundll32.exe shell32.dll,Control_RunDLL wgpocpl.cpl
+
+Miscellaneous File System Dialogs and Wizards
+Open With (File Associations): 
+    rundll32.exe shell32.dll,OpenAs_RunDLL d:\path\filename.ext
+Run Diskcopy Dialog:
+    rundll32.exe diskcopy.dll,DiskCopyRunDll
+Run Format Floppy Dialog:
+    rundll32.exe shell32.dll,SHFormatDrive     
+     (make sure a disk is inserted in Drive A: first!)
+Create New Shortcut Wizard:
+    rundll32.exe AppWiz.Cpl,NewLinkHere %1
+    (creates shortcut at location specified by %1)
+Create a Briefcase:
+    rundll32.exe syncui.dll,Briefcase_Create
+View Fonts:
+    rundll32.exe shell32.dll,SHHelpShortcuts_RunDLL FontsFolder
+View Printers:
+    rundll32.exe shell32.dll,SHHelpShortcuts_RunDLL PrintersFolder
+
+[TIP]add a button to the control box
+
+
+Public Type POINTAPI
+    x As Long
+    y As Long
+    End Type
+
+
+Public Declare Function Rectangle Lib "gdi32" (ByVal hdc As Long, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+
+
+Public Declare Function SelectObject Lib "gdi32" (ByVal hdc As Long, ByVal hObject As Long) As Long
+
+
+Public Declare Function DeleteObject Lib "gdi32" (ByVal hObject As Long) As Long
+
+
+Public Declare Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As Long
+
+
+Public Declare Function CreatePen Lib "gdi32" (ByVal nPenStyle As Long, ByVal nWidth As Long, ByVal crColor As Long) As Long
+
+
+Public Declare Function Ellipse Lib "gdi32" (ByVal hdc As Long, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+
+
+Public Declare Function LineTo Lib "gdi32" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long) As Long
+
+
+Public Declare Function MoveToEx Lib "gdi32" (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, lpPoint As POINTAPI) As Long
+
+
+Public Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+
+
+Public Declare Function SetWindowLong& Lib "user32" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long)
+
+
+Public Declare Function CallWindowProc Lib "user32" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As Long, ByVal hwnd As Long, ByVal msg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+
+
+Public Declare Function GetWindowDC Lib "user32" (ByVal hwnd As Long) As Long
+
+
+Public Declare Function ReleaseDC Lib "user32" (ByVal hwnd As Long, ByVal hdc As Long) As Long
+
+
+Public Declare Function ScreenToClient Lib "user32" (ByVal hwnd As Long, lpPoint As POINTAPI) As Long
+
+
+Public Declare Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
+    Public Const GWL_WNDPROC = (-4)
+    Public Const WM_NCPAINT = &H85
+    Public Const WM_PAINT = &HF
+    Public Const WM_SIZE = &H5
+    Public Const WM_NCLBUTTONDOWN = &HA1
+    Public Const WM_NCLBUTTONUP = &HA2
+    Public Const WM_NCHITTEST = &H84
+    Public Const WM_NCACTIVATE = &H86
+    Public Const WM_ACTIVATEAPP = &H1C
+    Public Const WM_ACTIVATE = &H6
+    Public Const WM_NCMOUSEMOVE = &HA0
+    Public Const WM_MOUSEMOVE = &H200
+    Public Const WM_NCLBUTTONDBLCLK = &HA3
+    Public WndProcOld As Long
+    Public gSubClassedForm As Form
+    Private bPressed As Boolean
+    'LOWORD and HIWORD are needed to extract
+    '     point values from lParam
+
+
+Public Function LoWord(ByVal LongVal As Long) As Integer
+    LoWord = LongVal And &HFFFF&
+End Function
+
+
+Public Function HiWord(ByVal LongVal As Long) As Integer
+
+
+    If LongVal = 0 Then
+        HiWord = 0
+        Exit Function
+    End If
+    HiWord = LongVal \ &H10000 And &HFFFF&
+End Function
+
+
+Public Function WindProc(ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+    Dim lWidth As Long
+    Dim POINTS As POINTAPI
+    'Draw the button whenever on any event t
+    '     hat will cause it to erase
+
+
+    If wMsg = WM_PAINT Or wMsg = WM_ACTIVATE Or wMsg = WM_ACTIVATEAPP Or wMsg = WM_NCACTIVATE Or wMsg = WM_NCPAINT Or (wMsg = WM_SIZE And wParam <> 1) Then
+        DrawControlBox hwnd, RGB(192, 192, 192), vbBlack, RGB(128, 128, 128), vbWhite, RGB(224, 224, 224), 0
+    End If
+    'Draws an "inverted" form of the button 
+    '     when it's pressed
+
+
+    If wMsg = WM_NCLBUTTONDOWN Then
+        lWidth = gSubClassedForm.Width / Screen.TwipsPerPixelX
+        MakeClientPoints hwnd, lParam, POINTS
+
+
+        If (POINTS.x > (lWidth - 80)) And (POINTS.x < (lWidth - 60)) Then
+            DrawControlBox hwnd, RGB(192, 192, 192), vbWhite, RGB(224, 224, 224), vbBlack, RGB(128, 128, 128), 1
+            bPressed = True
+            Exit Function
+        End If
+    End If
+    'Resets the original colors when the mou
+    '     se is unpressed
+
+
+    If wMsg = WM_NCLBUTTONUP Then
+        DrawControlBox hwnd, RGB(192, 192, 192), vbBlack, RGB(128, 128, 128), vbWhite, RGB(224, 224, 224), 0
+        lWidth = gSubClassedForm.Width / Screen.TwipsPerPixelX
+        MakeClientPoints hwnd, lParam, POINTS
+
+
+        If (POINTS.x > (lWidth - 74)) And (POINTS.x < (lWidth - 60)) Then
+
+
+            If bPressed = True Then
+                bPressed = False
+                Call gSubClassedForm.ControlBoxClick
+            End If
+            Exit Function
+        End If
+        bPressed = False
+    End If
+
+
+    If wMsg = WM_NCHITTEST And GetAsyncKeyState(vbLeftButton) Then
+        lWidth = gSubClassedForm.Width / Screen.TwipsPerPixelX
+        MakeClientPoints hwnd, lParam, POINTS
+
+
+        If (POINTS.x > (lWidth - 74)) And (POINTS.x < (lWidth - 60)) And (POINTS.y < 0) And (POINTS.y > -20) Then
+            DrawControlBox hwnd, RGB(192, 192, 192), vbWhite, RGB(224, 224, 224), vbBlack, RGB(128, 128, 128), 1
+        Else
+            DrawControlBox hwnd, RGB(192, 192, 192), vbBlack, RGB(128, 128, 128), vbWhite, RGB(224, 224, 224), 0
+        End If
+    End If
+
+
+    If wMsg = WM_NCLBUTTONDBLCLK Then
+        lWidth = gSubClassedForm.Width / Screen.TwipsPerPixelX
+        MakeClientPoints hwnd, lParam, POINTS
+        If (POINTS.x > (lWidth - 74)) And (POINTS.x < (lWidth - 60)) Then Exit Function
+    End If
+    WindProc = CallWindowProc(WndProcOld&, hwnd&, wMsg&, wParam&, lParam&)
+End Function
+'Converts screen coordinates of a DWORD 
+'     to a point structure, of a client
+
+
+Sub MakeClientPoints(ByVal hwnd As Long, ByVal pts As Long, PT As POINTAPI)
+    PT.x = LoWord(pts)
+    PT.y = HiWord(pts)
+    ScreenToClient hwnd, PT
+End Sub
+'***************************************
+'     ****************************************
+'     *
+'FUNCTION: DrawControlBox
+'ARGUMENTS: hwndhandle of window to draw
+'     on to
+'bGround Background color of button
+'Bdm1Bottom border color
+'Bdm22nd level bottom border
+'Top1Top border color
+'Top22nd level top border
+'lOffset Amount to offset the ellipse by
+'     
+'
+'COMMENTS: This is the sub routine that 
+'     draws the actual control box. It is not
+'a generic function, however. You may sp
+'     ecify the border colors, but
+'you cannot specify the shape inside or 
+'     the size. I will try to update this late
+'     r
+'***************************************
+'     ****************************************
+'     *
+
+
+Sub DrawControlBox(ByVal hwnd As Long, ByVal bGround As Long, ByVal Bdm1 As Long, ByVal Bdm2 As Long, ByVal Top1 As Long, ByVal Top2 As Long, ByVal lOffset As Byte)
+    Dim hBrush As Long 'Handle of the background brush
+    Dim hOldBrush As Long'Handle of the previous brush
+    Dim hPen As Long'Handle of the new pen
+    Dim hOldPen As Long 'Handle of the previous pen
+    Dim lWidth As Long 'Width of the window
+    Dim DC As Long 'Device context of window
+    Dim PT As POINTAPI 'Stores previous points in MoveToEx
+    lWidth = gSubClassedForm.Width / Screen.TwipsPerPixelX
+    DC = GetWindowDC(hwnd)
+    hBrush = CreateSolidBrush(bGround)
+    hOldBrush = SelectObject(DC, hBrush)
+    hPen = CreatePen(0, 1, Top1)
+    hOldPen = SelectObject(DC, hPen)
+    Rectangle DC, lWidth - 74, 6, lWidth - 58, 20
+    DeleteObject (SelectObject(DC, hOldPen))
+    'Draw ellipse (Black, regardless of othe
+    '     r colors)
+    hPen = CreatePen(0, 1, vbBlack)
+    hOldPen = SelectObject(DC, hPen)
+    Ellipse DC, lWidth - 70 + lOffset, 8 + lOffset, lWidth - 63 + lOffset, 17 + lOffset
+    DeleteObject (SelectObject(DC, hOldPen))
+    'Draw bottom border
+    hPen = CreatePen(0, 1, Bdm1)
+    hOldPen = SelectObject(DC, hPen)
+    DeleteObject (hOldPen)
+    MoveToEx DC, lWidth - 74, 19, PT
+    LineTo DC, lWidth - 58, 19
+    MoveToEx DC, lWidth - 59, 6, PT
+    LineTo DC, lWidth - 59, 19
+    DeleteObject (SelectObject(DC, hOldPen))
+    DeleteObject (SelectObject(DC, hOldBrush))
+    'Draw 2nd bottom border
+    hPen = CreatePen(0, 1, Bdm2)
+    hOldPen = SelectObject(DC, hPen)
+    DeleteObject (hOldPen)
+    MoveToEx DC, lWidth - 73, 18, PT
+    LineTo DC, lWidth - 59, 18
+    MoveToEx DC, lWidth - 60, 7, PT
+    LineTo DC, lWidth - 60, 19
+    DeleteObject (SelectObject(DC, hOldPen))
+    'Draw 2nd top border
+    hPen = CreatePen(0, 1, Top2)
+    hOldPen = SelectObject(DC, hPen)
+    DeleteObject (hOldPen)
+    MoveToEx DC, lWidth - 73, 7, PT
+    LineTo DC, lWidth - 60, 7
+    MoveToEx DC, lWidth - 73, 7, PT
+    LineTo DC, lWidth - 73, 18
+    DeleteObject (SelectObject(DC, hOldPen))
+    ReleaseDC hwnd, DC
+End Sub
+
+
+Public Sub SubClassForm(frm As Form)
+    WndProcOld& = SetWindowLong(frm.hwnd, GWL_WNDPROC, AddressOf WindProc)
+    Set gSubClassedForm = frm
+End Sub
+
+
+Public Sub UnSubclassForm(frm As Form)
+    SetWindowLong frm.hwnd, GWL_WNDPROC, WndProcOld&
+    WndProcOld& = 0
+End Sub
+'***************************************
+'     **********
+'ADD THIS SECTION OF CODE TO A FORM (CAL
+'     LED FORM1)
+'***************************************
+'     **********
+
+
+Private Sub Form_Load()
+
+
+SubClassForm Form1
+End Sub
+
+
+Private Sub Form_Unload(Cancel As Integer)
+    UnSubclassForm Form1
+End Sub
+'Make sure that the Sub "ControlBoxClick
+'     ()" is in the Form that you are
+'adding the control box to. Whatever is 
+'     in this sub routine will be executed
+'when the button is pressed
+
+
+Public Sub ControlBoxClick()
+    ' <-- Add code for when the button is cl
+    '     icked -->
+    MsgBox "You pressed the button"
+End Sub
+		
+
+[TIP]disable close button
+Declare Function GetSystemMenu Lib "user32" _
+(ByVal hwnd As Long, ByVal bRevert As Long) As Long
+
+Declare Function GetMenuItemCount Lib "user32" _
+(ByVal hMenu As Long) As Long
+
+Declare Function DrawMenuBar Lib "user32" _
+(ByVal hwnd As Long) As Long
+
+Declare Function RemoveMenu Lib "user32" _
+(ByVal hMenu As Long, ByVal nPosition As Long, _
+ByVal wFlags As Long) As Long
+Public Const MF_BYPOSITION = &H400&
+Public Const MF_REMOVE = &H1000&
+
+Form code----------------
+Dim hSysMenu As Long
+Dim nCnt As Long
+
+'First, show the form
+Me.Show
+
+'Get handle to our form's system menu 
+'(Restore, Maximize, Move, close etc.)
+hSysMenu = GetSystemMenu(Me.hwnd, False)
+
+If hSysMenu Then
+'Get System menu's menu count
+nCnt = GetMenuItemCount(hSysMenu)
+
+If nCnt Then
+
+'Menu count is based on 0 (0, 1, 2, 3...)
+
+RemoveMenu hSysMenu, nCnt - 1, _
+MF_BYPOSITION Or MF_REMOVE
+
+RemoveMenu hSysMenu, nCnt - 2, _
+MF_BYPOSITION Or MF_REMOVE 'Remove the seperator
+
+DrawMenuBar Me.hwnd 
+'Force caption bar's refresh. Disabling X button
+
+Me.Caption = "Try to close me!"
+End If
+End If
+
+[TIP]return sub directories
+Function SubFolders(ByVal strRootDir As String) As Variant
+    On Error Goto ehSubFolders 'Trap For errors
+    Dim strSubDir As String, strDelimiter As String, strReturn As String
+
+    If Trim(strRootDir) = "" Then
+        strRootDir = CurDir
+    End If
+    strRootDir = AppendBackslash(strRootDir)
+    strDelimiter = ";"
+    strSubDir = Dir(strRootDir, vbDirectory) 'Retrieve the first entry
+
+
+    Do While strSubDir <> "" 
+        If strSubDir <> "." And strSubDir <> ".." Then
+	    If (GetAttr(strRootDir & strSubDir) And vbDirectory) = vbDirectory Then
+        	strReturn = strReturn & strSubDir & strDelimiter
+	    End If
+	End If
+	strSubDir = Dir 'Get Next entry
+    Loop
+
+
+    SubFolders = Split(strReturn, strDelimiter)
+    Exit Function
+ehSubFolders:
+    SubFolders = Empty
+End Function
+[TIP]typed URL location
+HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\TypedURLs
+[TIP]transparent form when out of focus
+[form code]
+Private Sub Form_Load()
+Dim NormalWindowStyle As Long
+    Label1 = App.Path
+    Me.Show
+    DoEvents
+    gHW = Me.hwnd   'Store handle to this form's window
+    Hook    'Call procedure to begin capturing messages for this window
+
+ 
+    NormalWindowStyle = GetWindowLong(Me.hwnd, GWL_EXSTYLE)
+    SetWindowLong Me.hwnd, GWL_EXSTYLE, NormalWindowStyle Or WS_EX_LAYERED
+
+    SetLayeredWindowAttributes Me.hwnd, 0, 255, LWA_ALPHA
+
+End Sub
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+SetLayeredWindowAttributes Me.hwnd, 0, 155, LWA_ALPHA
+End Sub
+
+Private Sub Form_Unload(Cancel As Integer)
+    Unhook
+End Sub
+
+[module code]
+Public Const GWL_EXSTYLE = (-20)
+Public Const WS_EX_LAYERED = &H80000
+Public Const WS_EX_TRANSPARENT = &H20&
+Public Const LWA_ALPHA = &H2&
+
+Declare Function CallWindowProc Lib "user32" Alias _
+    "CallWindowProcA" (ByVal lpPrevWndFunc As Long, _
+    ByVal hwnd As Long, ByVal Msg As Long, _
+    ByVal wParam As Long, ByVal lParam As Long) As Long
+ 
+Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Declare Function SetLayeredWindowAttributes Lib "user32" (ByVal hwnd As Long, ByVal crey As Byte, ByVal bAlpha As Byte, ByVal dwFlags As Long) As Long
+
+Private Const WM_ACTIVATEAPP = &H1C
+Private Const GWL_WNDPROC = -4
+Public lpPrevWndProc As Long
+Public gHW As Long
+
+Public Sub Hook()
+
+    'Establish a hook to capture messages to this window
+    lpPrevWndProc = SetWindowLong(gHW, GWL_WNDPROC, AddressOf WindowProc)
+
+End Sub
+
+Public Sub Unhook()
+
+    Dim temp As Long
+    
+    'Reset the message handler for this window
+    temp = SetWindowLong(gHW, GWL_WNDPROC, lpPrevWndProc)
+    
+End Sub
+
+Function WindowProc(ByVal hw As Long, ByVal uMsg As Long, _
+    ByVal wParam As Long, ByVal lParam As Long) As Long
+
+    'Check for the ActivateApp message
+    If uMsg = WM_ACTIVATEAPP Then
+        'Check to see if Activating the application
+        If wParam = 0 Then  'Application Received Focus
+            SetLayeredWindowAttributes gHW, 0, 155, LWA_ALPHA
+        Else
+            'Application Lost Focus
+            SetLayeredWindowAttributes gHW, 0, 255, LWA_ALPHA
+        End If
+    End If
+    
+    'Pass message on to the original window message handler
+    WindowProc = CallWindowProc(lpPrevWndProc, hw, uMsg, wParam, lParam)
+End Function
+[TIP]ExitProcess - exit with return code
+Private Declare Sub ExitProcess Lib "kernel32" (ByVal uExitCode As Long)
+[TIP]press virtual key
+Private Declare Sub keybd_event Lib "user32" (ByVal bVk As Byte, ByVal bScan As Byte, ByVal dwFlags As Long, ByVal dwExtraInfo As Long)
+Private Declare Function GetKeyState Lib "user32" (ByVal nVirtKey As Long) As Long
+Private Const KEYEVENTF_KEYUP = &H2
+
+
+Sub PressVirtualKey(ByVal virtKeyCode As KeyCodeConstants, Optional ByVal Action As Integer)
+    If Action >= 0 Then keybd_event virtKeyCode, 0, 0, 0
+    If Action <= 0 Then keybd_event virtKeyCode, 0, KEYEVENTF_KEYUP, 0
+    End If
+End Sub
+[TIP]INI processing - the coolest
+Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As String, ByVal lpDefault As String, ByVal lpReturnedString As String, ByVal nSize As Long, ByVal lpFileName As String) As Long
+Declare Function WritePrivateProfileString Lib "kernel32" Alias "WritePrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As String, ByVal lpString As Any, ByVal lpFileName As String) As Long
+
+Function ReadINI(Section, KeyName, filename As String) As String
+    Dim sRet As String
+    sRet = String(255, Chr(0))
+    ReadINI = Left(sRet, GetPrivateProfileString(Section, ByVal KeyName, "", sRet, Len(sRet), filename))
+End Function
+Function writeINI(sSection As String, sKeyName As String, sNewString As String, sFileName) As Integer
+    Dim r
+    r = WritePrivateProfileString(sSection, sKeyName, sNewString, sFileName)
+End Function
+ 
+
+[TIP]task invisibility
+Private Sub Command1_Click()
+    command1.caption = "Hide"
+    App.TaskVisible = False
+    MsgBox "Now press control-Alt-Delete together, and hey presto, it aint there"
+End Sub
+
+
+Private Sub Command2_Click()
+    command2.caption = "Show"
+    App.TaskVisible = True
+    MsgBox "Now press control-Alt-Delete together and it will be there again"
+End Sub
+[TIP]BASE Conversion dec to any
+Function Base10toX(dNum As Double, lBase As Long) As String
+On Error GoTo Shit
+Dim x As Double
+Dim y As Double
+Dim Power As Integer
+    If lBase > 35 Then Err.Raise -849151, , "Base too large"
+    If lBase < 2 Then Err.Raise -849151, , "Base too small"
+    Base10toX = "": Power = 1
+    Do: Power = Power + 1: Loop Until lBase ^ Power >= dNum: x = dNum
+    While x >= lBase And Power > 0
+        y = x \ (lBase ^ Power)
+        If (y = 0 And Base10toX > "") Or y > 0 Then Base10toX = Base10toX & IIf(y < 10, CStr(y), Chr(65 + y - 10))
+        x = x - (y * (lBase ^ Power)): Power = Power - 1: DoEvents
+    Wend
+    Base10toX = Base10toX & IIf(x < 10, CStr(x), Chr(65 + x - 10))
+    Exit Function
+Shit:
+    Base10toX = Err.Description & " (" & Err.Number & ")"
+End Function
+[TIP]BASE conversion any to dec
+Function BaseXto10(dNum As String, lBase As Long) As Double
+On Error GoTo Shit
+Dim x As Integer
+Dim Power As Integer
+    If lBase > 35 Then Err.Raise -849151, , "Base too large"
+    If lBase < 2 Then Err.Raise -849151, , "Base too small"
+    BaseXto10 = 0
+    For Power = Len(dNum) To 1 Step -1
+        If IsNumeric(Mid(dNum, Len(dNum) - Power + 1, 1)) Then
+            x = CInt(Mid(dNum, Len(dNum) - Power + 1, 1))
+        Else
+            x = (Asc(Mid(dNum, Len(dNum) - Power + 1, 1)) - 55)
+        End If
+        BaseXto10 = BaseXto10 + (x * (lBase ^ (Power - 1)))
+    Next Power
+    Exit Function
+Shit:
+    BaseXto10 = Err.Description & " (" & Err.Number & ")"
+End Function
+
+[TIP]compare 2 user defined types
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (dest As _
+    Any, source As Any, ByVal bytes As Long)
+
+' a sample UDT structure, that contains almost every possible type of data
+Private Type MyUDT
+    item1 As Boolean
+    item2(10) As Integer
+    item3 As Long
+    item4 As Single
+    item5 As Double
+    item6 As Currency
+    item7 As String * 20
+End Type
+Dim udt1 As MyUDT, udt2 As MyUDT
+
+' init the first UDT
+udt1.item1 = 10
+udt1.item2(1) = 4
+udt1.item3 = 12345
+udt1.item4 = 345.567
+udt1.item5 = 111.333444
+udt1.item6 = 223344.5566
+udt1.item7 = "this is a test"
+
+' init the second UDT
+' (in this test both UDTs contains the same value)
+udt2 = udt1
+
+' the number of bytes to be compared
+Dim bytes As Long
+bytes = LenB(udt1)
+
+' the strings used for the comparison
+Dim s1 As String, s2 As String
+' make them long enough to host the UDTs
+s1 = Space$((bytes + 1) \ 2)
+s2 = s1
+
+' copy the UDTs into the strings
+CopyMemory ByVal StrPtr(s1), ByVal VarPtr(udt1), bytes
+CopyMemory ByVal StrPtr(s2), ByVal VarPtr(udt2), bytes
+
+' now you can perform the comparison
+If s1 = s2 Then
+    MsgBox "Equal"
+Else
+    MsgBox "Different"
+End If
+
+[TIP]VB to Excel example
+Dim objExcel As Excel.Application
+Dim objWorksheet As Excel.Worksheet
+Const BMWFont As String = "BMW Helvetica Light"
+Const XL_NOTRUNNING As Long = 429
+Const Bold As Boolean = True
+Const Regular As Boolean = False
+Const Wrap As Boolean = True
+Const NoWrap As Boolean = True
+
+
+Sub OpenExcelSheet()
+    Set objExcel = Excel.Application
+    objExcel.Visible = False
+    objExcel.SheetsInNewWorkbook = 1
+    objExcel.Workbooks.Add
+    Set objWorksheet = objExcel.Worksheets("Sheet1")
+      
+End Sub
+Sub WriteCell(sText As String, lCol As Long, lRow As Long, sFontName As String, _
+              iFontSize As Integer, bBold As Boolean, sAlignment As String)
+              
+    With objWorksheet
+        If Left(sText, 1) = "'" Then
+            .Cells(lRow, lCol).Value = sText
+        Else
+            .Cells(lRow, lCol).Formula = sText
+        End If
+        .Cells(lRow, lCol).Font.Name = sFontName
+        .Cells(lRow, lCol).Font.Size = iFontSize
+        .Cells(lRow, lCol).Font.Bold = IIf(bBold, True, False)
+        .Cells(lRow, lCol).VerticalAlignment = xlTop
+        .Cells(lRow, lCol).HorizontalAlignment = IIf(LCase(sAlignment) = "left", xlLeft, xlRight)
+        '.Cells(lRow, lCol).Font.Color = RGB(255,0,0)
+    End With
+End Sub
+Function CloseExcelSheet(ByVal EmployeeNo As Long, ByVal P11DFromDate As Date, ByVal P11DToDate As Date) As String
+Dim sLoc As String
+    sLoc = GetSetting(App.Title, "Settings", "P11DSaveLocation")
+    If sLoc = "" Then
+        SaveSetting App.Title, "Settings", "P11DSaveLocation", "c:\"
+        P11D_MsgBox "The location where your P11D reports has not been defined." & vbCrLf & vbCrLf & "The save location is now set to C:\" & vbCrLf & vbCrLf & "You can change this location from the Main menu/Options", 99, App.Title
+    End If
+    CloseExcelSheet = GetSetting(App.Title, "Settings", "P11DSaveLocation") & "P11D " & IIf(bForecast, "Forecast", "Actual") & " Emp " & _
+                    Format(EmployeeNo, "000000") & " From " & Format(P11DFromDate, "dd.mm.yyyy") & _
+                    " To " & Format(P11DToDate, "dd.mm.yyyy") & " Created " & _
+                    Format(Now, "dd.mm.yyyy HH.MM.SS") & ".xls"
+    objWorksheet.SaveAs FileName:=CloseExcelSheet, FileFormat:=xlNormal, _
+                    Password:="", WriteResPassword:="", _
+                    ReadOnlyRecommended:=False, CreateBackup:=False
+    objExcel.Quit
+    Set objWorksheet = Nothing
+    Set objExcel = Nothing
+    
+End Function
+Sub ExcelPageSetup(ByVal P11DFromDate As Date, ByVal P11DToDate As Date, _
+                        ByVal EmployeeNo As Long)
+Dim sPageSetup As String
+    SBInfo "Formatting excel wooksheet (Page setup)"
+    With objWorksheet
+        .Range("S1").Select
+        .Pictures.Insert(App.Path & "\bmw_logo.bmp").Select
+        With Selection
+            .ShapeRange.ScaleWidth 0.66, 0, 0
+            .ShapeRange.ScaleHeight 0.66, 0, 0
+        End With
+       
+        sPageSetup = "PAGE.SETUP(,,.5,.5,1,1,False,False,False,False,2,9,True," & Chr(34) & "Auto" & Chr(34) & ",1,False," & Chr(34) & "620" & Chr(34) & ",0.5,0.5,False,False)"
+        'PAGE.SETUP(head, foot, left, right, top, bot, hdng, grid, h_cntr, v_cntr, orient, paper_size, scale, pg_num, pg_order, bw_cells, quality, head_margin, foot_margin, notes, draft)
+        Application.ExecuteExcel4Macro sPageSetup
+        
+        
+        'line 1 header
+        SBInfo "Formatting excel wooksheet (Header line 1)"
+        WriteCell "'A Subsidiary of BMW AG", 1, 1, BMWFont, 6, Regular, "right"
+        .Range("A1").Select
+        With Selection
+            .VerticalAlignment = xlTop
+            .WrapText = True
+        End With
+        WriteCell "'" & OrganisationDescription(CurrentOrganisation), 2, 1, BMWFont, 18, Bold, "left"
+        WriteCell "'" & Year(P11DFromDate) & " - " & Year(P11DToDate), 8, 1, BMWFont, 18, Bold, "left"
+        
+        
+        'line 2 employee header
+        SBInfo "Formatting excel wooksheet (Header line 2)"
+        WriteCell "'" & Format(EmployeeNo, "000000"), 1, 3, BMWFont, 10, Bold, "Left"
+        WriteCell "'" & GetEmloyeeName(EmployeeNo), 4, 3, BMWFont, 10, Bold, "Left"
+        WriteCell "'" & GetEmloyeeNI(EmployeeNo), 9, 3, BMWFont, 10, Bold, "Left"
+        
+        'line 3 Vehicles
+        SBInfo "Formatting excel wooksheet (Header line 3)"
+        WriteCell "'Vehicles", 1, 5, BMWFont, 10, Bold, "Left"
+        WriteCell "'Mileage", 6, 6, BMWFont, 9, Bold, "left"
+        WriteCell "'Loan", 14, 6, BMWFont, 9, Bold, "left"
+        WriteCell "'Depreciation", 16, 6, BMWFont, 9, Bold, "left"
+        SBInfo ".", True
+        
+        'column headers
+        SBInfo "Formatting excel wooksheet (Column headers)"
+        WriteCell "'From", 1, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'To", 2, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'PPN", 3, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Reg No", 4, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Model", 5, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Business", 6, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Private", 7, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'PMR", 8, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Ins", 9, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Maint", 10, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'RFL", 11, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'PDI", 12, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Amount", 13, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Benefit", 14, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Residual", 15, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Amount", 16, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Benefit", 17, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Fuel", 18, 7, BMWFont, 8, Bold, "left"
+        WriteCell "'Total", 19, 7, BMWFont, 8, Bold, "left"
+        
+        'column widths
+        SBInfo "Formatting excel wooksheet (Column widths)"
+        .Columns(1).ColumnWidth = 9.14
+        .Columns(2).ColumnWidth = 9.14
+        .Columns(3).ColumnWidth = 3.71
+        .Columns(4).ColumnWidth = 8.43
+        .Columns(5).ColumnWidth = 11
+        .Columns(6).ColumnWidth = 7.29
+        .Columns(7).ColumnWidth = 5.75
+        .Columns(8).ColumnWidth = 4
+        .Columns(9).ColumnWidth = 3
+        .Columns(10).ColumnWidth = 5
+        .Columns(11).ColumnWidth = 4.3
+        .Columns(12).ColumnWidth = 4.14
+        .Columns(13).ColumnWidth = 6.86
+        .Columns(14).ColumnWidth = 6.3
+        .Columns(15).ColumnWidth = 6.86
+        .Columns(16).ColumnWidth = 6.43
+        .Columns(17).ColumnWidth = 6
+        .Columns(18).ColumnWidth = 6.29
+        .Columns(19).ColumnWidth = 8.43
+        
+    End With
+End Sub
+[TIP]laser draw effect
+Private Declare Function GetTickCount Lib "Kernel32" () As Long
+Private Declare Function GetPixel Lib "gdi32" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long) As Long
+Private Declare Function SetPixel Lib "gdi32" (ByVal hDC As Long, ByVal X As Long, ByVal Y As Long, ByVal crColor As Long) As Long
+Dim stopMe As Boolean
+
+Private Sub Command1_Click()
+  Dim pCol As Long
+  Dim pW As Long
+  Dim pH As Long
+
+  DisableButtons
+  Picture2.Cls
+  pW = Picture1.Width
+  pH = Picture1.Height
+  For X = 0 To pW - 1
+    For Y = 0 To pH - 1
+      pCol = GetPixel(Picture1.hDC, X, Y)
+      Picture2.Line (pW, pH / 2)-(X, Y), pCol
+      SetPixel Picture2.hDC, X, Y, pCol
+    Next Y
+    'Sleep 10
+    Picture2.Refresh
+    If stopMe = True Then
+      stopMe = False
+      EnableButtons
+      Exit Sub
+    End If
+  Next X
+  EnableButtons
+End Sub
+[TIP]list files and folders under a folder
+Dim FSO As New FileSystemObject
+Dim objFolders As Folders
+Dim objFolder As Folder
+Dim objFiles As Files
+Dim objFile As File
+Set objFolder = FSO.GetFolder("C:\")
+Set objFolders = objFolder.SubFolders
+Set objFiles = objFolder.Files
+
+
+
+For Each objFolder In objFolders
+    List1.AddItem objFolder.Name
+Next
+
+
+
+For Each objFile In objFiles
+    List2.AddItem objFile.Name
+Next
+
+[TIP]capture screen to file (screen print)
+Private Declare Sub keybd_event Lib "user32" (ByVal bVk As Byte, ByVal bScan As Byte, _ ByVal dwFlags As Long, ByVal dwExtraInfo As Long)
+
+Public Function Capture_Desktop(ByVal Destination$) as Boolean 
+
+On Error goto errl 
+DoEvents 
+Call keybd_event(vbKeySnapshot, 1, 0, 0) 'Get the screen and copy it to clipboard 
+DoEvents 'let computer catch up 
+SavePicture Clipboard.GetData(vbCFBitmap), Destination$ ' saves the clipboard data to a BMP file 
+Capture_Desktop = True 
+Exit Function 
+errl: 
+Msgbox "Error number: " & err.number & ". " & err.description 
+Capture_Desktop = False 
+End Function 'A lil' example 
+Private Sub Command1_Click() 
+Capture_Desktop "c:\windows\desktop\desktop.bmp" 'That's it
+[TIP]sleep API
+Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+'Sleep (1000)
+[TIP]get remote server time
+option Explicit
+                          '
+                          '
+                          private Declare Function NetRemoteTOD Lib "Netapi32.dll" ( _
+                              tServer as Any, pBuffer as Long) as Long
+                          '
+                          private Type SYSTEMTIME
+                              wYear as Integer
+                              wMonth as Integer
+                              wDayOfWeek as Integer
+                              wDay as Integer
+                              wHour as Integer
+                              wMinute as Integer
+                              wSecond as Integer
+                              wMilliseconds as Integer
+                          End Type
+                          '
+                          private Type TIME_ZONE_INFORMATION
+                              Bias as Long
+                              StandardName(32) as Integer
+                              StandardDate as SYSTEMTIME
+                              StandardBias as Long
+                              DaylightName(32) as Integer
+                              DaylightDate as SYSTEMTIME
+                              DaylightBias as Long
+                          End Type
+                          '
+                          private Declare Function GetTimeZoneInformation Lib "kernel32" (lpTimeZoneInformation as TIME_ZONE_INFORMATION) as Long
+                          '
+                          private Declare Function NetApiBufferFree Lib "Netapi32.dll" (byval lpBuffer as Long) as Long
+                          '
+                          private Type TIME_OF_DAY_INFO
+                              tod_elapsedt as Long
+                              tod_msecs as Long
+                              tod_hours as Long
+                              tod_mins as Long
+                              tod_secs as Long
+                              tod_hunds as Long
+                              tod_timezone as Long
+                              tod_tinterval as Long
+                              tod_day as Long
+                              tod_month as Long
+                              tod_year as Long
+                              tod_weekday as Long
+                          End Type
+                          '
+                          private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination as Any, Source as Any, byval Length as Long)
+                          '
+                          '
+                          public Function getRemoteTOD(byval strServer as string) as date
+                          '    
+                              Dim result as date
+                              Dim lRet as Long
+                              Dim tod as TIME_OF_DAY_INFO
+                              Dim lpbuff as Long
+                              Dim tServer() as Byte
+                          '
+                              tServer = strServer & vbNullChar
+                              lRet = NetRemoteTOD(tServer(0), lpbuff)
+                          '    
+                              If lRet = 0 then
+                                  CopyMemory tod, byval lpbuff, len(tod)
+                                  NetApiBufferFree lpbuff
+                                  result = DateSerial(tod.tod_year, tod.tod_month, tod.tod_day) + _
+                                  TimeSerial(tod.tod_hours, tod.tod_mins - tod.tod_timezone, tod.tod_secs)
+                                  getRemoteTOD = result
+                              else
+                                  Err.Raise Number:=vbObjectError + 1001, _
+                                  Description:="cannot get remote TOD"
+                              End If
+                          '
+                          End Function
+
+                          - to use in your program, call it like this : 
+
+
+                          private Sub Command1_Click()
+                              Dim d as date
+                          '
+                              d = GetRemoteTOD("your NT server name goes here")
+                              MsgBox d
+                          End Sub
+[TIP]transaprent form 5
+Private Declare Function CreateRoundRectRgn Lib "gdi32" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long, ByVal X3 As Long, ByVal Y3 As Long) As Long
+
+
+Private Declare Function CreateRectRgn Lib "gdi32" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+
+
+Private Declare Function CreateEllipticRgn Lib "gdi32" (ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+
+
+Private Declare Function CombineRgn Lib "gdi32" (ByVal hDestRgn As Long, ByVal hSrcRgn1 As Long, ByVal hSrcRgn2 As Long, ByVal nCombineMode As Long) As Long
+
+
+Private Declare Function SetWindowRgn Lib "user32" (ByVal hWnd As Long, ByVal hRgn As Long, ByVal bRedraw As Long) As Long
+    
+    
+    '2 The Function
+    ' This should be in the form's code. 
+
+
+Private Function fMakeATranspArea(AreaType As String, pCordinate() As Long) As Boolean
+    'Name: fMakeATranpArea
+    'Author: Dalin Nie
+    'Date: 5/18/98
+    'Purpose: Create a Transprarent Area in 
+    '     a form so that you can see through
+    'Input: Areatype : a String indicate wha
+    '     t kind of hole shape it would like to ma
+    '     ke
+    ' PCordinate : the cordinate area needed
+
+
+    '     for create the shape:
+        ' Example: X1, Y1, X2, Y2 for Rectangle
+        'OutPut: A boolean
+        Const RGN_DIFF = 4
+        Dim lOriginalForm As Long
+        Dim ltheHole As Long
+        Dim lNewForm As Long
+        Dim lFwidth As Single
+        Dim lFHeight As Single
+        Dim lborder_width As Single
+        Dim ltitle_height As Single
+        On Error Goto Trap
+        lFwidth = ScaleX(Width, vbTwips, vbPixels)
+        lFHeight = ScaleY(Height, vbTwips, vbPixels)
+        lOriginalForm = CreateRectRgn(0, 0, lFwidth, lFHeight)
+        
+        lborder_width = (lFHeight - ScaleWidth) / 2
+        ltitle_height = lFHeight - lborder_width - ScaleHeight
+
+
+        Select Case AreaType
+            
+            Case "Elliptic"
+            
+            ltheHole = CreateEllipticRgn(pCordinate(1), pCordinate(2), pCordinate(3), pCordinate(4))
+            Case "RectAngle"
+            
+            ltheHole = CreateRectRgn(pCordinate(1), pCordinate(2), pCordinate(3), pCordinate(4))
+            
+            Case "RoundRect"
+            
+            ltheHole = CreateRoundRectRgn(pCordinate(1), pCordinate(2), pCordinate(3), pCordinate(4), pCordinate(5), pCordinate(6))
+            Case "Circle"
+            ltheHole = CreateRoundRectRgn(pCordinate(1), pCordinate(2), pCordinate(3), pCordinate(4), pCordinate(3), pCordinate(4))
+            
+            Case Else
+            MsgBox "Unknown Shape!!"
+            Exit Function
+        End Select
+    lNewForm = CreateRectRgn(0, 0, 0, 0)
+    CombineRgn lNewForm, lOriginalForm, _
+    ltheHole, RGN_DIFF
+    
+    SetWindowRgn hWnd, lNewForm, True
+    Me.Refresh
+    fMakeATranspArea = True
+    Exit Function
+    Trap:
+    MsgBox "error Occurred. Error # " & Err.Number & ", " & Err.Description
+End Function
+
+
+' 3 How To Call 
+
+Dim lParam(1 To 6) As Long
+lParam(1) = 100
+lParam(2) = 100
+lParam(3) = 250
+lParam(4) = 250
+lParam(5) = 50
+lParam(6) = 50
+Call fMakeATranspArea("RoundRect", lParam())
+'Call fMakeATranspArea("RectAngle", lPar
+'     am())
+'Call fMakeATranspArea("Circle", lParam(
+'     ))
+'Call fMakeATranspArea("Elliptic", lPara
+'     m())
+
+
+[TIP]fast decimal to binary
+Private Function DecToBin2(ByVal dIn As Double) As String
+    DecToBin2 = ""
+
+
+    While dIn >= 1
+        DecToBin2 = IIf(dIn Mod 2 = 0, "0", "1") & DecToBin2
+        dIn = dIn \ 2
+    Wend
+End Function
+
+Private Function BinToDec(ByVal sIn As String) As Double
+    Dim x As Integer
+    BinToDec = 0
+
+
+    For x = 1 To Len(sIn)
+        BinToDec = BinToDec + (CInt(Mid(sIn, x, 1)) * (2 ^ (Len(sIn) - x)))
+    Next x
+End Function
+[TIP]Excel stuff 3 (working)
+Dim objExcel As Excel.Application
+Dim i As Long
+
+Set objExcel = Excel.Application
+objExcel.Visible = False
+objExcel.SheetsInNewWorkbook = 1
+objExcel.Workbooks.Add ' (Text1)
+
+With objExcel.ActiveSheet
+    .Cells(1, 1).Value = "DATE"
+    .Cells(1, 2).Value = "CHAPTER"
+    .Cells(1, 3).Value = "# QUESTIONS"
+    .Cells(1, 4).Value = "RIGHT ANSWERS"
+    .Cells(1, 5).Value = "WRONG ANSWERS"
+    .Cells(1, 6).Value = "NOT ANSWERED"
+    .Cells(1, 7).Value = "PERCENTAGE"
+End With
+
+objExcel.ActiveSheet.SaveAs FileName:=Text1, FileFormat:=xlNormal, _
+                Password:="", WriteResPassword:="", _
+                ReadOnlyRecommended:=False, CreateBackup:=False
+objExcel.Quit
+Set objExcel = Nothing
+[TIP]Excel stuff 2
+im objExcel As Excel.Application
+
+Set objExcel = Excel.Application
+objExcel.Visible = False
+objExcel.SheetsInNewWorkbook = 1
+objExcel.Workbooks.Open ("C:/WS_SolarisMTT/Stats")
+
+With objExcel.ActiveSheet
+.Cells(1, 1).Value = "DATE"
+.Cells(1, 2).Value = "CHAPTER"
+.Cells(1, 3).Value = "# QUESTIONS"
+.Cells(1, 4).Value = "RIGHT ANSWERS"
+.Cells(1, 5).Value = "WRONG ANSWERS"
+.Cells(1, 6).Value = "NOT ANSWERED"
+.Cells(1, 7).Value = "PERCENTAGE"
+End With
+
+I = 2
+cellfree:
+With objExcel.ActiveSheet
+
+If .Cells(I, 1).Value <> "" Then
+I = I + 1
+GoTo cellfree
+Else
+.Cells(I, 1).Value = Date
+.Cells(I, 2).Value = "Chap1"
+.Cells(I, 3).Value = N
+.Cells(I, 4).Value = contador
+.Cells(I, 5).Value = Cuentabad
+.Cells(I, 6).Value = Cuentanoans
+.Cells(I, 7).Value = Percent
+End If
+End With
+
+
+objExcel.Save "C:/WS_SolarisMTT/Stats"
+objExcel.Quit
+Set objExcel = Nothing
+
+[TIP]Excel stuff 1
+Private xlApp As Excel.Application  ' Excel Application Object 
+Private xlBook As Excel.Workbook    ' Excel Workbook Object 
+
+'************************************************************* 
+' Gets the contents of an Excel Worksheet's cell. 
+' 
+' xlWorksheet: Name of a worksheet in an Excel File, for example, 
+'              "Sheet1" 
+' xlCellName:  Name of a Cell (Row and Column), for example, 
+'              "A1" or "B222". 
+' xlFileName:  Name of an Excel File, for example, "C:TestTesting.xls" 
+'************************************************************* 
+Private Function GetExcel(xlFileName As String, _ 
+                          xlWorksheet As String, _ 
+                          xlCellName As String) As String 
+                          
+   On Error GoTo GetExcel_Err 
+   
+   Dim strCellContents As String 
+   ' Create the Excel App Object 
+   Set xlApp = CreateObject("Excel.Application") 
+   ' Create the Excel Workbook Object. 
+   Set xlBook = xlApp.Workbooks.Open(xlFileName) 
+   
+   ' Get the Cell Contents 
+   strCellContents =     xlBook.worksheets(xlWorksheet).range(xlCellName).Value
+   
+   ' Close the spreadsheet 
+   xlBook.Close savechanges:=False 
+   xlApp.Quit 
+   Set xlApp = Nothing 
+   Set xlBook = Nothing 
+   
+   GetExcel = strCellContents 
+   
+   Exit Function 
+GetExcel_Err: 
+   MsgBox "GetExcel Error: " & Err.Number & "-" & Err.Description 
+   Resume Next 
+End Function 
+
+'************************************************************* 
+' Sets the contents of an Excel Worksheet's cell. 
+' 
+' xlWorksheet: Name of a worksheet in an Excel File, for example, 
+'              "Sheet1" 
+' xlCellName:  Name of a Cell (Row and Column), for example, 
+'              "A1" or "B222". 
+' xlFileName:  Name of an Excel File, for example, "C:TestTesting.xls" 
+' xlCellContents:  What you want to place into the Cell. 
+'************************************************************* 
+Private Sub SetExcel(xlFileName As String, _ 
+                     xlWorksheet As String, _ 
+                     xlCellName As String, _ 
+                     xlCellContents As String) 
+                          
+   On Error GoTo SetExcel_Err 
+   
+   ' Create the Excel App Object 
+   Set xlApp = CreateObject("Excel.Application") 
+   
+   ' Create the Excel Workbook Object. 
+   Set xlBook = xlApp.Workbooks.Open(xlFileName) 
+   
+   ' Set the value of the Cell 
+   xlBook.worksheets(xlWorksheet).range(xlCellName).Value = xlCellContents 
+   
+   ' Save changes and close the spreadsheet 
+   xlBook.Save 
+   xlBook.Close savechanges:=False 
+   xlApp.Quit 
+   Set xlApp = Nothing 
+   Set xlBook = Nothing 
+   Exit Sub 
+SetExcel_Err: 
+   MsgBox "SetExcel Error: " & Err.Number & "-" & Err.Description 
+   Resume Next 
+End Sub
+[TIP]array building without subscripts
+    ReDim s(0)
+    For x = 1 To 10
+        ReDim Preserve s(UBound(s) + 1)
+        s(UBound(s) - 1) = x
+    Next x
+    ReDim Preserve s(UBound(s) - 1)
+[TIP]kill application
+Const MAX_PATH& = 260
+Declare Function TerminateProcess Lib "kernel32" (ByVal ApphProcess As Long, ByVal uExitCode As Long) As Long
+Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal blnheritHandle As Long, ByVal dwAppProcessId As Long) As Long
+Declare Function ProcessFirst Lib "kernel32" Alias "Process32First" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Declare Function ProcessNext Lib "kernel32" Alias "Process32Next" (ByVal hSnapshot As Long, uProcess As PROCESSENTRY32) As Long
+Declare Function CreateToolhelpSnapshot Lib "kernel32" Alias "CreateToolhelp32Snapshot" (ByVal lFlags As Long, lProcessID As Long) As Long
+Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+
+
+Type PROCESSENTRY32
+    dwSize As Long
+    cntUsage As Long
+    th32ProcessID As Long
+    th32DefaultHeapID As Long
+    th32ModuleID As Long
+    cntThreads As Long
+    th32ParentProcessID As Long
+    pcPriClassBase As Long
+    dwFlags As Long
+    szexeFile As String * MAX_PATH
+    End Type
+
+
+
+Public Function KillApp(myName As String) As Boolean
+    
+    Const PROCESS_ALL_ACCESS = 0
+    Dim uProcess As PROCESSENTRY32
+    Dim rProcessFound As Long
+    Dim hSnapshot As Long
+    Dim szExename As String
+    Dim exitCode As Long
+    Dim myProcess As Long
+    Dim AppKill As Boolean
+    Dim appCount As Integer
+    Dim i As Integer
+    On Local Error Goto Finish
+    appCount = 0
+    
+    Const TH32CS_SNAPPROCESS As Long = 2&
+    
+    uProcess.dwSize = Len(uProcess)
+    hSnapshot = CreateToolhelpSnapshot(TH32CS_SNAPPROCESS, 0&)
+    rProcessFound = ProcessFirst(hSnapshot, uProcess)
+
+
+    Do While rProcessFound
+        i = InStr(1, uProcess.szexeFile, Chr(0))
+        szExename = LCase$(Left$(uProcess.szexeFile, i - 1))
+
+
+        If Right$(szExename, Len(myName)) = LCase$(myName) Then
+            KillApp = True
+            appCount = appCount + 1
+            myProcess = OpenProcess(PROCESS_ALL_ACCESS, False, uProcess.th32ProcessID)
+            AppKill = TerminateProcess(myProcess, exitCode)
+            Call CloseHandle(myProcess)
+        End If
+        rProcessFound = ProcessNext(hSnapshot, uProcess)
+    Loop
+    Call CloseHandle(hSnapshot)
+    Finish:
+End Function
+
+[TIP]make a .reg file
+First, open notepad. Then on the very first line, type, REGEDIT4.
+IMPORTANT: Put "Windows Registry Editor Version 5.00" AS THE BEGINING FOR WINDOWS 2000 USERS!!! 
+On the next line type, [ Now type the path to your key. (i.e., HKEY_LOCAL_MACHINE\...) 
+DO NOT PUT QUOTATION MARKS FOR THE PATH! 
+End the key location with, ] On the line RIGHT under that, type a quotation mark, then the key name. 
+End your key NAME always with a quotation mark. 
+Type an = sign, (with no space in between the key) next type the value for that key. 
+
+If you have multiple keys to add, press enter and add the other key name and so on until you get to the point where you want to add another key to a different location. When you get to this point, press enter and and follow these steps all over again! When your done, save it as: "whatever.reg" An example would look like this: 
+REGEDIT4
+[HKEY_LOCAL_MACHINE\Software\WINDOWS\]
+"Whatever"=Anything
+[HKEY_LOCAL_MACHINE\Software\YourApp]
+"Color"=&H8000000F
+[TIP]detect application focus
+in the bas module...
+Option Explicit
+
+Private Declare Function CallWindowProc Lib "user32" Alias _
+	"CallWindowProcA" (ByVal lpPrevWndFunc As Long, _
+	ByVal hwnd As Long, ByVal Msg As Long, _
+	ByVal wParam As Long, ByVal lParam As Long) As Long 
+ 
+Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" _
+	(ByVal hwnd As Long, ByVal nIndex As Long, _
+	ByVal dwNewLong As Long) As Long 
+
+Private Const WM_ACTIVATEAPP = &H1C
+Private Const GWL_WNDPROC =    -4
+Public lpPrevWndProc As Long
+Public gHW As Long 
+
+Public Sub Hook()
+
+	'Establish a hook to capture messages to this window
+	lpPrevWndProc = SetWindowLong(gHW, GWL_WNDPROC, AddressOf WindowProc) 
+
+End Sub
+
+Public Sub Unhook()
+
+	Dim temp As Long
+	
+	'Reset the message handler for this window
+	temp = SetWindowLong(gHW, GWL_WNDPROC, lpPrevWndProc)
+	
+End Sub
+
+Function WindowProc(ByVal hw As Long, ByVal uMsg As Long, _
+	ByVal wParam As Long, ByVal lParam As Long) As Long
+
+	'Check for the ActivateApp message
+	If uMsg = WM_ACTIVATEAPP Then
+		'Check to see if Activating the application
+		If wParam = 0 Then	'Application Received Focus
+			Form1.Caption = "Focus Restored"
+		Else
+			'Application Lost Focus
+			Form1.Caption = "Focus Lost"
+		End If
+	End If 
+	
+	'Pass message on to the original window message handler
+	WindowProc =  CallWindowProc(lpPrevWndProc, hw, uMsg, wParam, lParam) 
+End Function
+
+In the form....
+Option Explicit
+
+Sub Form_Load()
+
+    gHW = Me.hwnd   'Store handle to this form's window
+    Hook    'Call procedure to begin capturing messages for this window
+    
+End Sub
+Private Sub Form_Unload(Cancel As Integer)
+
+    'Call procedure to stop intercepting the messages for this window
+    Unhook
+    
+End Sub
+
+[TIP]log time
+Sub StartApp()
+Open "c:\test.log" For Append As #1
+Print #1, Format(Now, "yyyymmdd hh:mm") & " " & UCase(Environ("username")) & " START"
+Close #1
+End Sub
+Sub ExitApp()
+Open "c:\test.log" For Append As #1
+Print #1, Format(Now, "yyyymmdd hh:mm") & " " & UCase(Environ("username")) & " STOP"
+Close #1
+Unload Me
+End
+
+End Sub
+[TIP]screen resolution
+Label1 = CStr(Screen.Width / Screen.TwipsPerPixelX) & "x" & CStr(Screen.Height / Screen.TwipsPerPixelY)
+[TIP]ini delete
+Function INI_D(ByVal sLocation As String, ByVal sField As String) As String
+Dim iFnum As Integer
+Dim sFile As String
+Dim sLines() As String
+Dim iX As Integer
+    
+    If Not FileExists(sLocation) Then
+        INI_D = "!INI file not found"
+        Exit Function
+    End If
+    If Left(INI_R(sLocation, sField), 4) = "!INI" Then
+        INI_D = "!INI field not found"
+        Exit Function
+    End If
+    
+    sFile = FileText(sLocation)
+    sLines = Split(sFile, vbCrLf)
+    iFnum = FreeFile
+    Open sLocation For Output As iFnum
+    
+    For iX = 0 To UBound(sLines)
+        If (Trim(sLines(iX)) = "" Or InStr(sLines(iX), "=") = 0) _
+        Or InStr(UCase(sLines(iX)), UCase(sField)) = 0 _
+        Or (InStr(UCase(sLines(iX)), UCase(sField)) > 0 And InStr(sLines(iX), "=") < InStr(UCase(sLines(iX)), UCase(sField))) Then
+            Print #iFnum, sLines(iX)
+        
+        End If
+    Next iX
+
+    Close iFnum
+    INI_D = "!INI RC0"
+
+End Function
+[TIP]ini write
+Function INI_W(ByVal sLocation As String, ByVal sField As String, ByVal sValue As String) As String
+Dim bFieldThere As Boolean
+Dim sFile As String
+Dim iFnum As Integer
+Dim sLines() As String
+Dim iX As Integer
+Dim sLine() As String
+
+    If Not FileExists(sLocation) Then
+        INI_W = "!INI file not found"
+        Exit Function
+    End If
+
+    bFieldThere = True
+    If Left(INI_R(sLocation, sField), 4) = "!INI" Then
+        bFieldThere = False
+    End If
+    sFile = FileText(sLocation)
+    sFile = IIf(Right(sFile, 2) = vbCrLf, Left(sFile, Len(sFile) - 2), sFile)
+    iFnum = FreeFile
+    Open sLocation For Output As iFnum
+    
+    If Not bFieldThere Then
+        sFile = sFile & vbCrLf & sField & "=" & sValue
+        Print #iFnum, sFile
+    Else
+        sLines = Split(sFile, vbCrLf)
+        For iX = 0 To UBound(sLines)
+            If Trim(sLines(iX)) = "" Or InStr(sLines(iX), "=") = 0 Then
+                Print #iFnum, sLines(iX)
+            Else
+                sLine = Split(sLines(iX), "=")
+                If UCase(sLine(0)) = UCase(sField) Then
+                    sLine(1) = sValue
+                End If
+                Print #iFnum, sLine(0) & "=" & sLine(1)
+            End If
+        Next iX
+    End If
+    Close iFnum
+    INI_W = "!INI RC0"
+End Function
+[TIP]ini read
+Function INI_R(ByVal sLocation As String, ByVal sField As String) As String
+'==========================================
+'requires fileexists and filetext functions
+'==========================================
+On Local Error GoTo INIError
+    If Not FileExists(sLocation) Then
+        INI_R = "!INI file not found"
+        Exit Function
+    End If
+Dim sIn As String
+Dim sLines() As String
+
+    sIn = FileText(sLocation)
+    sLines = Split(UCase(sIn), UCase(sField))
+    If Left(sLines(1), 1) <> "=" Then
+        INI_R = "!INI field not found"
+        Exit Function
+    End If
+    INI_R = Mid(sLines(1), 2, IIf(InStr(sLines(1), vbCrLf) > 0, InStr(sLines(1), vbCrLf), Len(sLines(1))) - 1)
+    Exit Function
+INIError:
+    INI_R = "!INI field not found"
+End Function
+[TIP]trim textbox width to width of text
+Text1.Width = Form1.TextWidth("a") 
+[TIP]decimal to binary
+Private Sub Command1_Click()
+    DecValue = Val(Text1.Text)
+    BinValue = ""
+
+
+    Do
+        TempValue = DecValue Mod 2
+        BinValue = CStr(TempValue) + BinValue
+        DecValue = DecValue \ 2
+    Loop Until DecValue = 0
+    'Print
+    'Print BinValue
+    Text2.Text = BinValue
+End Sub
+[TIP]open an app with it's default application
+Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+
+'// open file (quotes are used so that the actual value that is passed is "C:\test.doc"
+Private Sub cmdOpen_Click()
+    If ShellExecute(0, vbNullString, """"C:\test.doc"""", vbNullString, vbNullString, vbNormalFocus) = 2 Then
+End Sub
+
+'// open url
+Private Sub cmdOpen_Click()
+    If ShellExecute(0, vbNullString, "http://www.vbweb.f9.co.uk/", vbNullString, vbNullString, vbNormalFocus) = 2 Then
+End Sub
+
+'// open email address
+Private Sub cmdOpen_Click()
+    If ShellExecute(0, vbNullString, "mailto:support@vbweb.f9.co.uk", vbNullString, vbNullString, vbNormalFocus) = 2 Then
+End Sub 
+
+[TIP]detect internet connection
+Option Explicit
+Public Declare Function InternetGetConnectedState _
+Lib "wininet.dll" (ByRef lpSFlags As Long, _
+ByVal dwReserved As Long) As Long
+
+Public Const INTERNET_CONNECTION_LAN As Long = &H2
+Public Const INTERNET_CONNECTION_MODEM As Long = &H1
+
+Public Function Online() As Boolean
+    'If you are online it will return True, otherwise False
+    Online = InternetGetConnectedState(0& ,0&)
+End Function
+
+Public Function ViaLAN() As Boolean
+
+Dim SFlags As Long
+'return the flags associated with the connection
+Call InternetGetConnectedState(SFlags, 0&)
+
+'True if the Sflags has a LAN connection
+ViaLAN = SFlags And INTERNET_CONNECTION_LAN
+
+End Function
+Public Function ViaModem() As Boolean
+
+Dim SFlags As Long
+'return the flags associated with the connection
+Call InternetGetConnectedState(SFlags, 0&)
+
+'True if the Sflags has a modem connection
+ViaModem = SFlags And INTERNET_CONNECTION_MODEM
+
+End Function
+
+
+'Add this code to a form with one command button and three text boxes. It will return "True" for which ever 'one you are connected to. 
+
+Option Explicit 
+
+Private Sub Command1_Click() 
+Text1 = ViaLAN() 
+Text2 = ViaModem() 
+Text3 = Online()
+End Sub 
+
+
+
+
+[TIP]registry bits n bobs
+
+' Reg Key Security Options...
+Const KEY_ALL_ACCESS = &H2003F
+
+' Reg Key ROOT Types...
+Const HKEY_LOCAL_MACHINE = &H80000002
+Const ERROR_SUCCESS = 0
+Const REG_SZ = 1                         ' Unicode nul terminated string
+Const REG_DWORD = 4                      ' 32-bit number
+
+Const gREGKEYSYSINFOLOC = "SOFTWARE\Microsoft\Shared Tools Location"
+Const gREGVALSYSINFOLOC = "MSINFO"
+Const gREGKEYSYSINFO = "SOFTWARE\Microsoft\Shared Tools\MSINFO"
+Const gREGVALSYSINFO = "PATH"
+
+Private Declare Function OSWinHelp% Lib "user32" Alias "WinHelpA" (ByVal hwnd&, ByVal HelpFile$, ByVal wCommand%, dwData As Any)
+Private Declare Function RegOpenKeyEx Lib "advapi32" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, ByRef phkResult As Long) As Long
+Private Declare Function RegQueryValueEx Lib "advapi32" Alias "RegQueryValueExA" (ByVal hKey As Long, ByVal lpValueName As String, ByVal lpReserved As Long, ByRef lpType As Long, ByVal lpData As String, ByRef lpcbData As Long) As Long
+Private Declare Function RegCloseKey Lib "advapi32" (ByVal hKey As Long) As Long
+Public Sub StartSysInfo()
+    On Error GoTo SysInfoErr
+
+    Dim rc As Long
+    Dim SysInfoPath As String
+
+    ' Try To Get System Info Program Path\Name From Registry...
+    If GetKeyValue(HKEY_LOCAL_MACHINE, gREGKEYSYSINFO, gREGVALSYSINFO, SysInfoPath) Then
+        ' Try To Get System Info Program Path Only From Registry...
+    ElseIf GetKeyValue(HKEY_LOCAL_MACHINE, gREGKEYSYSINFOLOC, gREGVALSYSINFOLOC, SysInfoPath) Then
+        ' Validate Existance Of Known 32 Bit File Version
+        If (Dir(SysInfoPath & "\MSINFO32.EXE") <> "") Then
+            SysInfoPath = SysInfoPath & "\MSINFO32.EXE"
+
+            ' Error - File Can Not Be Found...
+        Else
+            GoTo SysInfoErr
+        End If
+        ' Error - Registry Entry Can Not Be Found...
+    Else
+        GoTo SysInfoErr
+    End If
+
+    Call Shell(SysInfoPath, vbNormalFocus)
+
+    Exit Sub
+SysInfoErr:
+    MsgBox "System Information Is Unavailable At This Time", vbOKOnly
+End Sub
+Public Function GetKeyValue(KeyRoot As Long, KeyName As String, SubKeyRef As String, ByRef KeyVal As String) As Boolean
+    Dim i As Long                                           ' Loop Counter
+    Dim rc As Long                                          ' Return Code
+    Dim hKey As Long                                        ' Handle To An Open Registry Key
+    Dim hDepth As Long                                      '
+    Dim KeyValType As Long                                  ' Data Type Of A Registry Key
+    Dim tmpVal As String                                    ' Tempory Storage For A Registry Key Value
+    Dim KeyValSize As Long                                  ' Size Of Registry Key Variable
+    '------------------------------------------------------------
+    ' Open RegKey Under KeyRoot {HKEY_LOCAL_MACHINE...}
+    '------------------------------------------------------------
+    rc = RegOpenKeyEx(KeyRoot, KeyName, 0, KEY_ALL_ACCESS, hKey) ' Open Registry Key
+
+    If (rc <> ERROR_SUCCESS) Then GoTo GetKeyError          ' Handle Error...
+
+    tmpVal = String$(1024, 0)                             ' Allocate Variable Space
+    KeyValSize = 1024                                       ' Mark Variable Size
+
+    '------------------------------------------------------------
+    ' Retrieve Registry Key Value...
+    '------------------------------------------------------------
+    rc = RegQueryValueEx(hKey, SubKeyRef, 0, KeyValType, tmpVal, KeyValSize)    ' Get/Create Key Value
+
+    If (rc <> ERROR_SUCCESS) Then GoTo GetKeyError          ' Handle Errors
+
+    tmpVal = VBA.Left(tmpVal, InStr(tmpVal, VBA.Chr(0)) - 1)
+    '------------------------------------------------------------
+    ' Determine Key Value Type For Conversion...
+    '------------------------------------------------------------
+    Select Case KeyValType                                  ' Search Data Types...
+    Case REG_SZ                                             ' String Registry Key Data Type
+        KeyVal = tmpVal                                     ' Copy String Value
+    Case REG_DWORD                                          ' Double Word Registry Key Data Type
+        For i = Len(tmpVal) To 1 Step -1                    ' Convert Each Bit
+            KeyVal = KeyVal + Hex(Asc(Mid(tmpVal, i, 1)))   ' Build Value Char. By Char.
+        Next
+        KeyVal = Format$("&h" + KeyVal)                     ' Convert Double Word To String
+    End Select
+
+    GetKeyValue = True                                      ' Return Success
+    rc = RegCloseKey(hKey)                                  ' Close Registry Key
+    Exit Function                                           ' Exit
+
+GetKeyError:        ' Cleanup After An Error Has Occured...
+    KeyVal = ""                                             ' Set Return Val To Empty String
+    GetKeyValue = False                                     ' Return Failure
+    rc = RegCloseKey(hKey)                                  ' Close Registry Key
+End Function
+
+    DEFAULT_USER = GetSetting(App.EXEName, "OPTIONS", "DEFAULT_USER", 1)
+    EXCHANGE_USER = GetSetting(App.EXEName, "OPTIONS", "EXCHANGE_USER", "")
+    DAILY_DIST_LIST = GetSetting(App.EXEName, "OPTIONS", "DAILY_DIST_LIST", "")
+    Me.Left = GetSetting(App.Title, "Settings", "MainLeft", 1000)
+    Me.Top = GetSetting(App.Title, "Settings", "MainTop", 1000)
+    Me.Width = GetSetting(App.Title, "Settings", "MainWidth", 6500)
+    Me.Height = GetSetting(App.Title, "Settings", "MainHeight", 6500)
+
+
+[TIP]complete INI file handling
+Function WriteINI(sLOC As String, sParm As String, _
+            sValue As String, Optional sHeader As String)
+'*******************************************************
+'**                                                   **
+'**   Requires FileExists and FileText functions!!!   **
+'**                                                   **
+'*******************************************************
+Dim sIF As String
+Dim x As Double, y As Double
+Dim dHeaderPos As Double
+Dim dNextHeaderPos As Double
+Dim dParmPos As Double
+Dim bHeaderExists As Boolean
+Dim bHeaderRequired As Boolean
+Dim bParmIsThere As Boolean
+Dim sNewINI As String
+Dim fNum As Integer
+    If Not FileExists(sLOC) Then
+        WriteINI = "!" & sLOC & " file not found"
+        Exit Function
+    Else
+        sIF = FileText(sLOC)
+    End If
+    sParm = UCase(sParm)
+    sHeader = UCase(sHeader)
+    If sHeader > "" Then
+        bHeaderRequired = True
+        dHeaderPos = InStr(UCase(sIF), "[" & sHeader & "]")
+        If dHeaderPos > 0 Then
+            bHeaderExists = True
+            dNextHeaderPos = InStr(dHeaderPos + 1, sIF, "[")
+            If dNextHeaderPos = 0 Then
+                dNextHeaderPos = Len(sIF) + 1
+            End If
+        Else
+            bHeaderExists = False
+        End If
+    Else
+        bHeaderRequired = False
+    End If
+    dParmPos = InStr(UCase(sIF), sParm & "=")
+    If dParmPos > 0 Then
+        bParmIsThere = True
+    Else
+        bParmIsThere = False
+    End If
+    
+    If bHeaderRequired Then
+        If bHeaderExists Then
+            If bParmIsThere And (dParmPos > dHeaderPos) And (dParmPos < dNextHeaderPos) Then
+                x = InStr(dParmPos, sIF, vbCrLf)
+                sNewINI = Left(sIF, dParmPos + Len(sParm)) & sValue & Mid(sIF, x)
+            Else
+                If bParmIsThere Then
+                    WriteINI = "!" & sParm & " is there under a different header"
+                    Exit Function
+                Else
+                    x = InStr(dHeaderPos, sIF, vbCrLf)
+                    sNewINI = Left(sIF, x - 1) & vbCrLf & sParm & "=" & sValue & Mid(sIF, x)
+                End If
+            End If
+        Else
+            sNewINI = sIF & "[" & sHeader & "]" & vbCrLf & sParm & "=" & sValue
+        End If
+    Else
+        If bParmIsThere Then
+            x = InStr(dParmPos, sIF, vbCrLf)
+            If x = 0 Then
+                x = Len(sIF)
+            End If
+            sNewINI = Left(sIF, dParmPos + Len(sParm)) & sValue & Mid(sIF, x)
+        Else
+            sNewINI = sParm & "=" & sValue & vbCrLf & sIF
+        End If
+    End If
+    fNum = FreeFile
+    Open sLOC For Output As fNum
+    Print #fNum, sNewINI
+    Close fNum
+    WriteINI = "!OK RC"
+End Function
+Function ReadINI(sLOC As String, sParm As String) As String
+'*******************************************************
+'**                                                   **
+'**   Requires FileExists and FileText functions!!!   **
+'**                                                   **
+'*******************************************************
+Dim sIF As String
+Dim x As Double, y As Double, z As Double
+    If Not FileExists(sLOC) Then
+        ReadINI = "!" & sLOC & " file not found"
+        Exit Function
+    Else
+        sIF = FileText(sLOC)
+    End If
+    sParm = UCase(sParm) & "="
+    x = InStr(UCase(sIF), sParm)
+    If x = 0 Then
+        ReadINI = "!Parameter not present on INI file : " & Left(sParm, Len(sParm) - 1)
+        Exit Function
+    End If
+    
+    x = x + Len(sParm)
+    y = InStr(x, sIF, vbCrLf)
+    If y = 0 Then
+        y = Len(sIF) + 1
+    End If
+    ReadINI = Mid(sIF, x, y - x)
+End Function
+Function RemoveINI(sLOC As String, sParm As String) As String
+'*******************************************************
+'**                                                   **
+'**   Requires FileExists and FileText functions!!!   **
+'**                                                   **
+'*******************************************************
+Dim sIF As String, sNewINI As String
+Dim fNum As Integer
+Dim x As Double, y As Double, z As Double
+    If Not FileExists(sLOC) Then
+        RemoveINI = "!" & sLOC & " file not found"
+        Exit Function
+    Else
+        sIF = FileText(sLOC)
+    End If
+    sParm = UCase(sParm) & "="
+    x = InStr(UCase(sIF), sParm)
+    If x = 0 Then
+        RemoveINI = "!Parameter not present on INI file : " & Left(sParm, Len(sParm) - 1)
+        Exit Function
+    End If
+    
+    y = InStr(x + 1, sIF, vbCrLf)
+    If y = 0 Then
+        y = Len(sIF)
+    End If
+    sNewINI = Left(sIF, x - 1) & Mid(sIF, y + 2)
+    fNum = FreeFile
+    Open sLOC For Output As fNum
+    Print #fNum, sNewINI
+    Close fNum
+    RemoveINI = "!OK RC"
+End Function
+
+Function FileExists(FileName As String) As Boolean
+    On Error GoTo ErrorHandler
+    ' get the attributes and ensure that it isn't a directory
+    FileExists = (GetAttr(FileName) And vbDirectory) = 0
+ErrorHandler:
+    ' if an error occurs, this function returns False
+End Function
+Function FileText(ByVal FileName As String) As String
+    Dim handle As Integer
+    
+    If Len(Dir$(FileName)) = 0 Then
+        Err.Raise 53   ' File not found
+    End If
+    
+    handle = FreeFile
+    Open FileName$ For Binary As #handle
+    FileText = Space$(LOF(handle))
+    Get #handle, , FileText
+    Close #handle
+End Function
+
+
+[TIP]send focal form to the clipboard!
+SendKeys (Chr(18) & Chr(161) & Chr(44))
+
+[TIP]windows directory path
+Private Declare Function GetWindowsDirectory Lib "kernel32" Alias _
+    "GetWindowsDirectoryA" (ByVal lpBuffer As String, _
+    ByVal nSize As Long) As Long
+
+' Return the path of the Windows directory
+
+Function WindowsDirectory() As String
+    Dim buffer As String * 512, length As Integer
+    length = GetWindowsDirectory(buffer, Len(buffer))
+    WindowsDirectory = Left$(buffer, length)
+End Function
+
+
+
+[TIP]Get File description from API
+Private Const MAX_PATH = 260
+
+Private Type SHFILEINFO
+    hIcon As Long
+    iIcon As Long
+    dwAttributes As Long
+    szDisplayName As String * MAX_PATH
+    szTypeName As String * 80
+End Type
+
+Private Declare Function SHGetFileInfo Lib "Shell32" Alias "SHGetFileInfoA" _
+    (ByVal pszPath As Any, ByVal dwFileAttributes As Long, psfi As SHFILEINFO, _
+    ByVal cbFileInfo As Long, ByVal uFlags As Long) As Long
+
+' Returns the description of the specified file/folder 
+'  (for example "Folder", "Executable file", "Bmp Image" and so on)
+
+Function GetFileDescription(ByVal sPath As String) As String
+    Const SHGFI_TYPENAME = &H400
+    
+    Dim FInfo As SHFILEINFO
+    
+    ' retrieve the item's attributes
+    SHGetFileInfo sPath, 0, FInfo, Len(FInfo), SHGFI_TYPENAME
+    ' read the szTypeName field
+    GetFileDescription = Left$(FInfo.szTypeName, InStr(FInfo.szTypeName & _
+        vbNullChar, vbNullChar) - 1)
+End Function
+
+
+[TIP]Get File dates
+Private Type SYSTEMTIME
+    wYear As Integer
+    wMonth As Integer
+    wDayOfWeek As Integer
+    wDay As Integer
+    wHour As Integer
+    wMinute As Integer
+    wSecond As Integer
+    wMilliseconds As Integer
+End Type
+
+Private Type FILETIME
+    dwLowDateTime As Long
+    dwHighDateTime As Long
+End Type
+
+Private Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal _
+    lpFileName As String, ByVal dwDesiredAccess As Long, _
+    ByVal dwShareMode As Long, ByVal NoSecurity As Long, _
+    ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, _
+    ByVal hTemplateFile As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As _
+    Long
+Private Declare Function GetFileTime Lib "kernel32" (ByVal hFile As Long, _
+    lpCreationTime As FILETIME, lpLastAccessTime As FILETIME, _
+    lpLastWriteTime As FILETIME) As Long
+Private Declare Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As _
+    FILETIME, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function FileTimeToLocalFileTime Lib "kernel32" (lpFileTime As _
+    FILETIME, lpLocalFileTime As FILETIME) As Long
+
+Private Const GENERIC_READ = &H80000000
+Private Const FILE_SHARE_READ = &H1
+Private Const FILE_SHARE_WRITE = &H2
+Private Const OPEN_EXISTING = 3
+Private Const INVALID_HANDLE_VALUE = -1
+
+' Retrieve the Create date, Modify (write) date and Last Access date of
+' the specified file. Returns True if successful, False otherwise.
+
+Function GetFileTimeInfo(ByVal FileName As String, Optional CreateDate As Date, _
+    Optional ModifyDate As Date, Optional LastAccessDate As Date) As Boolean
+
+    Dim hFile As Long
+    Dim ftCreate As FILETIME
+    Dim ftModify As FILETIME
+    Dim ftLastAccess As FILETIME
+    Dim ft As FILETIME
+    Dim st As SYSTEMTIME
+    
+    ' open the file, exit if error
+    hFile = CreateFile(FileName, GENERIC_READ, _
+        FILE_SHARE_READ Or FILE_SHARE_WRITE, 0&, OPEN_EXISTING, 0&, 0&)
+    If hFile = INVALID_HANDLE_VALUE Then Exit Function
+    
+    ' read date information
+    If GetFileTime(hFile, ftCreate, ftLastAccess, ftModify) Then
+        ' non zero means successful
+        GetFileTimeInfo = True
+        
+        ' convert result to date values
+        ' first, convert UTC file time to local file time
+        FileTimeToLocalFileTime ftCreate, ft
+        ' then convert to system time
+        FileTimeToSystemTime ft, st
+        ' finally, make up the Date value
+        CreateDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+        
+        ' do the same for the ModifyDate
+        FileTimeToLocalFileTime ftModify, ft
+        FileTimeToSystemTime ft, st
+        ModifyDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+        ' and for LastAccessDate
+        FileTimeToLocalFileTime ftLastAccess, ft
+        FileTimeToSystemTime ft, st
+        LastAccessDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+    End If
+    
+    ' close the file, in all cases
+    CloseHandle hFile
+
+End Function
+
+
+
+
+[TIP]shelling control panel applets
+
+   Private Sub SetDateTime()
+      Call Shell("rundll32.exe shell32.dll,Control_RunDLL timedate.cpl")
+   End Sub
+
+
+[TIP]email using CDO 1.2 reference
+Sub SendEmailMAPI(SendTo As String, Subject As String, EmailText As String, _
+    Optional AttachmentPath As String, Optional Attachment As String)
+    On Error GoTo ErrorHandler
+    Dim cdoSession As Object
+    Dim oFolder As Object
+    Dim oMsg As Object
+    Dim oRcpt As Object
+    Dim oMessages As Object
+
+    Set cdoSession = CreateObject("MAPI.Session")
+    cdoSession.Logon "MS Exchange Settings"
+    Set oFolder = cdoSession.Outbox
+    Set oMessages = oFolder.Messages
+    Set oMsg = oMessages.Add
+    Set oRcpt = oMsg.Recipients
+    oRcpt.Add , "SMTP:" & SendTo, CdoTo
+    oRcpt.Resolve
+    oMsg.Subject = Subject
+    oMsg.Text = EmailText
+    oMsg.Send
+    cdoSession.Logoff
+
+ExitMe:
+   Exit Sub
+
+ErrorHandler:
+Const fname As String = "c:\dlrmem_errorlog.txt"
+Dim fnum As Integer
+    fnum = FreeFile
+    Open fname For Append As fnum
+    
+   Print #fnum, Format(Now, "yyyymmdd hhmmss") & " /mailto:" & SendTo & " / " & Err.Number, Err.Description
+   Resume ExitMe
+
+End Sub
+
+[TIP]get short file name
+Function ShortDirName(sIn As String, iFullDirsToShow As Integer, iHalfDirsToShow As Integer) As String
+Dim sOut() As String
+Dim x As Integer
+    sOut = Split(sIn, "\")
+    x = UBound(sOut)
+    ShortDirName = ""
+    For x = 0 To UBound(sOut)
+        ShortDirName = ShortDirName & _
+            IIf(x < (iFullDirsToShow + 1) Or x = UBound(sOut), _
+                sOut(x) & IIf(x = UBound(sOut), _
+                            "", _
+                            "\"), _
+                IIf((x > iFullDirsToShow) And (x <= (iFullDirsToShow + iHalfDirsToShow)), _
+                    Left(sOut(x), Len(sOut(x)) \ 2) & "...\", _
+                    "...\"))
+    Next x
+End Function
+
+[TIP]get windows temporary directory
+function WindowsTEMPDir() as string
+	WindowsTEMPDir= IIf(Environ$("tmp"), Environ$("tmp"),Environ$("temp"))
+end function
+
+[TIP]get file date info
+Private Type SYSTEMTIME
+    wYear As Integer
+    wMonth As Integer
+    wDayOfWeek As Integer
+    wDay As Integer
+    wHour As Integer
+    wMinute As Integer
+    wSecond As Integer
+    wMilliseconds As Integer
+End Type
+
+Private Type FILETIME
+    dwLowDateTime As Long
+    dwHighDateTime As Long
+End Type
+
+Private Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal _
+    lpFileName As String, ByVal dwDesiredAccess As Long, _
+    ByVal dwShareMode As Long, ByVal NoSecurity As Long, _
+    ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, _
+    ByVal hTemplateFile As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As _
+    Long
+Private Declare Function GetFileTime Lib "kernel32" (ByVal hFile As Long, _
+    lpCreationTime As FILETIME, lpLastAccessTime As FILETIME, _
+    lpLastWriteTime As FILETIME) As Long
+Private Declare Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As _
+    FILETIME, lpSystemTime As SYSTEMTIME) As Long
+Private Declare Function FileTimeToLocalFileTime Lib "kernel32" (lpFileTime As _
+    FILETIME, lpLocalFileTime As FILETIME) As Long
+
+Private Const GENERIC_READ = &H80000000
+Private Const FILE_SHARE_READ = &H1
+Private Const FILE_SHARE_WRITE = &H2
+Private Const OPEN_EXISTING = 3
+Private Const INVALID_HANDLE_VALUE = -1
+
+' Retrieve the Create date, Modify (write) date and Last Access date of
+' the specified file. Returns True if successful, False otherwise.
+
+Function GetFileTimeInfo(ByVal FileName As String, Optional CreateDate As Date, _
+    Optional ModifyDate As Date, Optional LastAccessDate As Date) As Boolean
+
+    Dim hFile As Long
+    Dim ftCreate As FILETIME
+    Dim ftModify As FILETIME
+    Dim ftLastAccess As FILETIME
+    Dim ft As FILETIME
+    Dim st As SYSTEMTIME
+    
+    ' open the file, exit if error
+    hFile = CreateFile(FileName, GENERIC_READ, _
+        FILE_SHARE_READ Or FILE_SHARE_WRITE, 0&, OPEN_EXISTING, 0&, 0&)
+    If hFile = INVALID_HANDLE_VALUE Then Exit Function
+    
+    ' read date information
+    If GetFileTime(hFile, ftCreate, ftLastAccess, ftModify) Then
+        ' non zero means successful
+        GetFileTimeInfo = True
+        
+        ' convert result to date values
+        ' first, convert UTC file time to local file time
+        FileTimeToLocalFileTime ftCreate, ft
+        ' then convert to system time
+        FileTimeToSystemTime ft, st
+        ' finally, make up the Date value
+        CreateDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+        
+        ' do the same for the ModifyDate
+        FileTimeToLocalFileTime ftModify, ft
+        FileTimeToSystemTime ft, st
+        ModifyDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+        ' and for LastAccessDate
+        FileTimeToLocalFileTime ftLastAccess, ft
+        FileTimeToSystemTime ft, st
+        LastAccessDate = DateSerial(st.wYear, st.wMonth, _
+            st.wDay) + TimeSerial(st.wHour, st.wMinute, _
+            st.wSecond) + (st.wMilliseconds / 86400000)
+    End If
+    
+    ' close the file, in all cases
+    CloseHandle hFile
+
+End Function
+
+
+
+[TIP]get file version
+Public Declare Function GetFileVersionInfoSize Lib "version.dll" Alias _
+    "GetFileVersionInfoSizeA" (ByVal lptstrFilename As String, _
+    lpdwHandle As Long) As Long
+Public Declare Function GetFileVersionInfo Lib "version.dll" Alias _
+    "GetFileVersionInfoA" (ByVal lptstrFilename As String, _
+    ByVal dwHandle As Long, ByVal dwLen As Long, lpData As Any) As Long
+
+Function GetFileVersionData(ByVal FileName As String) As Variant
+    Dim length As Long
+    Dim handle As Long
+    Dim buffer As String
+    Dim index As Long
+    Dim pos As Long
+    
+    length = GetFileVersionInfoSize(FileName, handle)
+    If length = 0 Then Exit Function
+    
+    buffer = Space$(length)
+    
+    If GetFileVersionInfo(FileName, handle, length, ByVal StrPtr(buffer)) = 0 _
+        Then
+        Exit Function
+    End If
+    Dim res() As String
+    res() = Split("CompanyName;FileDescription;FileVersion;InternalName;" & _
+        "LegalCopyright;OriginalFilename;ProductName;ProductVersion;" & _
+        "Comments;LegalTrademarks;PrivateBuild;SpecialBuild", ";")
+    
+
+    For index = 0 To UBound(res)
+        pos = InStr(buffer, res(index))
+        If pos Then
+            pos = pos + Len(res(index)) + 1
+            If Mid$(buffer, pos, 1) = vbNullChar Then pos = pos + 1
+            res(index) = res(index) & ": " & Mid$(buffer, pos, InStr(pos, _
+                buffer, vbNullChar) - pos)
+        End If
+    Next
+    
+    GetFileVersionData = res()
+    
+End Function
+
+Dim res As Variant
+res = GetFileVersionData(sFName)
+
+[TIP]display a line of 16 bytes of data, hex followed by displayable chars
+Function ByteDisp(ByVal BO As Double, ByVal sIn As String) As String
+Dim x As Integer
+Dim sAddr As String
+Dim sHex As String
+
+Dim sChr As String
+    sHex = ""
+    sChr = ""
+    For x = 1 To 32
+        If x <= Len(sIn) Then
+            sHex = sHex & IIf(Len(Hex$(Asc(Mid(sIn, x, 1)))) = 1, "0", "") & Hex$(Asc(Mid(sIn, x, 1))) & " "
+            sChr = sChr & IIf(Asc(Mid(sIn, x, 1)) < 32 Or Asc(Mid(sIn, x, 1)) > 126, ".", Mid(sIn, x, 1))
+        Else
+            sHex = sHex & "   "
+            sChr = sChr & " "
+        End If
+    Next x
+    sAddr = Hex$(BO)
+    sAddr = String(10 - Len(sAddr), "0") & sAddr
+    ByteDisp = sAddr & " " & sHex & " " & sChr
+        
+End Function
+
+[TIP]email using mapi with attachments
+Sub EmailUser(From As String, SendTo As String, Subject As String, _
+    EmailText As String, Optional AttachmentPath As String, _
+    Optional Attachment As String, Optional CC As String)
+    Const constRoutine As String = "SendEmail"
+
+    Dim strSendTo As String
+    Dim objSendMail As CDONTS.NewMail
+    Dim i As Integer
+
+    On Error GoTo TryMAPI
+    
+    'Do not cause the user a major error, just log the error and keep going
+    If SendTo = "" Then Exit Sub
+
+    Set objSendMail = New CDONTS.NewMail
+
+    With objSendMail
+        On Error Resume Next
+        .From = From
+        If CC <> "" Then
+            .CC = CC
+        End If
+
+        On Error GoTo ErrorHandler
+        .To = SendTo
+        .Subject = Subject
+        .Body = EmailText
+        AttachmentPath = Trim$(AttachmentPath)
+        
+        If AttachmentPath <> "" Then
+            If Right$(AttachmentPath, 1) <> "\" Then
+                AttachmentPath = AttachmentPath & "\"
+            End If
+            .AttachFile (AttachmentPath & Attachment)
+        End If
+        .Send
+    End With
+
+    GoTo ExitMe
+
+TryMAPI:
+    On Error GoTo ErrorHandler
+
+    'If CDO fails, try MAPI
+    If CC <> "" Then
+        strSendTo = SendTo & "; " & CC
+    Else
+        strSendTo = SendTo
+    End If
+
+    Call SendEmailMAPI(SendTo:=strSendTo, Subject:=Subject, _
+        EmailText:=EmailText)
+
+ExitMe:
+    Set objSendMail = Nothing
+    Exit Sub
+
+ErrorHandler:
+    'Err.Raise Err.Number, Err.Source, Err.Description
+    Resume ExitMe
+
+End Sub
+
+[TIP]another email mapi
+Sub SendEmailMAPI(SendTo As String, Subject As String, EmailText As String, _
+    Optional AttachmentPath As String, Optional Attachment As String)
+   Const constRoutine As String = "SendEmailMAPI"
+
+   Dim intStart As Integer
+   Dim strSendTo As String
+   Dim intEnd As Integer
+   Dim i As Integer
+
+   On Error GoTo ErrorHandler
+   
+   If frmEmailCommon.mapiSession.SessionID = 0 Then
+      frmEmailCommon.mapiSession.SignOn
+   End If
+
+   If SendTo = "" Then Exit Sub
+
+   With frmEmailCommon.mapiMessages
+      .SessionID = frmEmailCommon.mapiSession.SessionID
+      .Compose
+
+      'Make sure that the SendTo always has a trailing semi-colon (makes it
+      ' easier below)
+      'Strip out any spaces between names for consistency
+      For i = 1 To Len(SendTo)
+         If Mid$(SendTo, i, 1) <> " " Then
+            strSendTo = strSendTo & Mid$(SendTo, i, 1)
+         End If
+      Next i
+
+      SendTo = strSendTo
+      If Right$(SendTo, 1) <> ";" Then
+         SendTo = SendTo & ";"
+      End If
+
+      'Format each recipient, each are separated by a semi-colon, like this:
+      '  steve.miller@aol.com;sm@psc.com; sm@teletech.com;
+      intEnd = InStr(1, SendTo, ";")
+      .RecipAddress = Mid$(SendTo, 1, intEnd - 1)
+      .ResolveName
+
+      intStart = intEnd + 1
+      Do
+         intEnd = InStr(intStart, SendTo, ";")
+         If intEnd = 0 Then
+            Exit Do
+         Else
+            .RecipIndex = .RecipIndex + 1
+            .RecipAddress = Mid$(SendTo, intStart, intEnd - intStart)
+            .ResolveName
+         End If
+         intStart = intEnd + 1
+      Loop
+
+      .MsgSubject = Subject
+      .MsgNoteText = EmailText
+      If Left$(Attachment, 1) = "\" Then
+         Attachment = Mid$(Attachment, 2, Len(Attachment))
+      End If
+
+      If Attachment <> "" Then
+         If Right$(AttachmentPath, 1) = "\" Then
+            .AttachmentPathName = AttachmentPath & Attachment
+         Else
+            .AttachmentPathName = AttachmentPath & "\" & Attachment
+         End If
+        .AttachmentName = Attachment
+      End If
+      .Send False
+   End With
+
+ExitMe:
+   Exit Sub
+
+ErrorHandler:
+   Err.Raise Err.Number, m_constPgm & constRoutine, Err.Description
+   Resume ExitMe
+
+End Sub
+
+
+[TIP]days in the months
+Function DaysInMonths(ByVal Yr As Integer) As Integer()
+Dim y As Integer, x As Integer, z(12) As Integer
+    For x = 1 To 12
+        y = 31
+        While Not IsDate(CStr(y) & "/" & CStr(x) & "/" & CStr(Yr))
+            y = y - 1
+        Wend
+        z(x - 1) = y
+    Next x
+    DaysInMonths = z
+End Function
+
+[TIP]convert greg dates to julian
+Function ConvertToJulian(ByVal sIn As String) As String
+Dim iYr As Integer, iMth As Integer, iDD As Integer, cDys As Integer
+Dim DM(12) As Integer, Leap As Boolean, x As Integer
+
+    DM(0) = 31: DM(2) = 31
+    DM(3) = 30: DM(4) = 31: DM(5) = 30
+    DM(6) = 31: DM(7) = 31: DM(8) = 30
+    DM(9) = 31: DM(10) = 30: DM(11) = 31
+    Leap = False
+    iYr = Format(sIn, "yyyy")
+    If (iYr Mod 4 = 0 And iYr Mod 100 > 0) Or (iYr Mod 100 = 0 And iYr Mod 400 = 0) Then
+        Leap = True
+    End If
+
+    DM(1) = IIf(Leap, 29, 28)
+    iMth = Format(sIn, "mm")
+    iDD = Format(sIn, "dd")
+    cDys = 0
+    x = 0
+    While x < iMth - 1
+        cDys = cDys + DM(x)
+        x = x + 1
+    Wend
+    cDys = cDys + iDD
+    ConvertToJulian = Format(sIn, "yyyy") & " " & Format(cDys, "000")
+    
+End Function
+
+
+[TIP]convert julian dates to gregorian
+Function ConvertFromJulian(ByVal sIn As String) As String
+Dim iYr As Integer, iMth As Integer, iDD As Integer, cDys As Integer
+Dim DM(12) As Integer, Leap As Boolean, x As Integer
+    cDys = CInt(Right(sIn, 3))
+    iYr = CInt(Left(sIn, Len(sIn) - 3))
+        
+    DM(0) = 31:    DM(2) = 31
+    DM(3) = 30:    DM(4) = 31:    DM(5) = 30
+    DM(6) = 31:    DM(7) = 31:    DM(8) = 30
+    DM(9) = 31:    DM(10) = 30:    DM(11) = 31
+    Leap = False
+    If (iYr Mod 4 = 0 And iYr Mod 100 > 0) Or (iYr Mod 100 = 0 And iYr Mod 400 = 0) Then
+        Leap = True
+    End If
+    DM(1) = IIf(Leap, 29, 28)
+    
+    iMth = 0
+    While cDys > DM(iMth)
+        cDys = cDys - DM(iMth)
+        iMth = iMth + 1
+    Wend
+    iMth = iMth + 1
+    iDD = cDys
+    
+    ConvertFromJulian = CStr(iDD) & "/" & CStr(iMth) & "/" & CStr(iYr)
+    
+End Function
+
+[TIP]get userid
+Public Declare Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
+    Dim Userid As String, _
+        Result As Long, _
+        Length As Long
+
+    ' Get windows username
+    Userid = "        "
+    Result = 0
+    Length = 8
+    Result = GetUserName(Userid, Length)
+    GetUserId = UCase$(Left$(Userid, Length - 1))
+
+[TIP]decimal to any base
+Function Dec2Any(ByVal number As Long, ByVal base As Integer) As String
+    Dim index As Long
+    Dim digits As String
+    Dim digitValue As Long
+    
+    ' check base
+    If base < 2 Or base > 36 Then Err.Raise 5
+    ' get the list of valid digits
+    digits = Left("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", base)
+    
+    ' convert to the other base
+    Do While number
+        digitValue = number Mod base
+        number = number \ base
+        Dec2Any = Mid$(digits, digitValue + 1, 1) & Dec2Any
+    Loop
+
+End Function
+
+[TIP]any base to decimal
+Function Any2Dec(ByVal otherBaseNumber As String, ByVal base As Integer) As Long
+    Dim index As Long
+    Dim digits As String
+    Dim digitValue As Long
+    
+    ' check base
+    If base < 2 Or base > 36 Then Err.Raise 5
+    ' get the list of valid digits
+    digits = Left("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", base)
+    
+    ' convert to decimal
+    For index = 1 To Len(otherBaseNumber)
+        ' get the digit's value
+        digitValue = InStr(1, digits, Mid$(otherBaseNumber, index, 1), _
+            vbTextCompare) - 1
+        ' error if invalid digit
+        If digitValue < 0 Then Err.Raise 5
+        ' add to running result
+        Any2Dec = Any2Dec * base + digitValue
+    Next
+    
+End Function
+
+[TIP]How do I create controls dynamically (at run-time)?
+   
+Private Sub Command1_Click()
+Dim x As Integer
+    x = NumControls("Label1")
+    Load Label1(x)
+    Label1(x).Left = Label1(x - 1).Left
+    Label1(x).Top = Label1(x - 1).Height + Label1(x - 1).Top + 60
+    Label1(x).Visible = True
+    
+End Sub
+
+Function NumControls(sName As String) As Integer
+Dim x As Control
+    NumControls = 0
+    For Each x In Me.Controls
+        If x.Name = sName Then
+            NumControls = NumControls + 1
+        End If
+    Next x
+    
+End Function
+
+
+[TIP]prevent multiple instances
+
+       If App.PrevInstance Then
+          SaveTitle$ = App.Title
+          App.Title = "... duplicate instance."
+          Form1.Caption = "... duplicate instance."
+          AppActivate SaveTitle$
+          SendKeys "% R", True
+          End
+       End If
+     
+
+[TIP]shift key pressed?
+Private Declare Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
+
+' The state of the Ctrl key
+Function CtrlKey() As Boolean
+    CtrlKey = (GetAsyncKeyState(vbKeyControl) And &H8000)
+End Function
+
+' The state of either Shift keys
+Function ShiftKey() As Boolean
+    ShiftKey = (GetAsyncKeyState(vbKeyShift) And &H8000)
+End Function
+
+' The state of the Alt key
+Function AltKey() As Boolean
+    AltKey = (GetAsyncKeyState(vbKeyMenu) And &H8000)
+End Function
+
+
+[TIP]check is a printer is installed
+Function PrinterIsInstalled() As Boolean
+    Dim dummy As String
+
+    On Error Resume Next
+    dummy = Printer.DeviceName
+    
+    If Err.Number Then
+        MsgBox "No default printer installed." & vbCrLf & _
+            "To install and select a default printer, select the " & _
+            "Setting / Printers command in the Start menu, and then " & _
+            "double-click on the Add Printer icon.", vbExclamation, _
+            "Printer Error"
+        PrinterIsInstalled = False
+    Else
+        PrinterIsInstalled = True
+    End If
+End Function
+
+
+[TIP]drag a captionless form
+Private Declare Function SendMessage Lib "User32" Alias "SendMessageA" (ByVal _
+    hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, _
+    lParam As Any) As Long
+Private Declare Sub ReleaseCapture Lib "User32" ()
+
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, _
+    Y As Single)
+    Const WM_NCLBUTTONDOWN = &HA1
+    Const HTCAPTION = 2
+    If Button = 1 Then
+        ReleaseCapture
+        SendMessage Me.hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0&
+    End If
+End Sub
+
+
+
+[TIP]Return True if a file exists
+
+Function FileExists(FileName As String) As Boolean
+    On Error GoTo ErrorHandler
+    ' get the attributes and ensure that it isn't a directory
+    FileExists = (GetAttr(FileName) And vbDirectory) = 0
+ErrorHandler:
+    ' if an error occurs, this function returns False
+End Function
+
+
+
+[TIP]convert hex to decimal
+Function HexToDec(HexValue As String) As Long
+    HexToDec = Val("&H" & HexValue)
+End Function
+
+
+[TIP]pop up menu from a textbox
+Private Sub Text1_MouseDown(Button As Integer, Shift As Integer, X As Single, _
+    Y As Single)
+    If Button = vbRightButton Then
+        ' disable the textbox
+        Text1.Enabled = False
+        ' (this DoEvents seems to be optional)
+        DoEvents
+        ' re-enable the control, so that it doesn't appear as grayed
+        Text1.Enabled = True
+        ' show your custom menu       
+        PopupMenu mnuFile
+    End If
+End Sub
+
+
+
+
+
+[TIP]Read text files in one operation
+'Text1.Text = FileText("c:\autoexec.bat")
+
+Function FileText(ByVal filename As String) As String
+    Dim handle As Integer
+    
+    If Len(Dir$(filename)) = 0 Then
+        Err.Raise 53   ' File not found
+    End If
+    
+    handle = FreeFile
+    Open filename$ For Binary As #handle
+    FileText = Space$(LOF(handle))
+    Get #handle, , FileText
+    Close #handle
+End Function
+
+
+[TIP]File System Object
+    Dim FSO             As New FileSystemObject
+    Dim ts              As TextStream
+
+    Set ts = FSO.OpenTextFile(msINIFileName, ForWriting)
+    ts.WriteLine sString
+    ts.Close
+
+	'requires scripting object reference
+
+	'get files in a directory
+    Dim sLogDirectory As String
+    Dim FSO As New FileSystemObject
+    Dim Fol As Folder
+    Dim fil As File
+    
+    sLogDirectory = "c:\"
+    Set Fol = FSO.GetFolder(sLogDirectory)
+    For Each fil In Fol.Files
+        'do something with fil.Name
+    Next
+
+[TIP]HOWTO: Use CDO (1.x) To Read MAPI Address Book Properties
+Private Sub Command1_Click()
+
+       Const strServer = "MyServer"
+       Const strMailbox = "MyMailbox"
+
+       Dim objSession As MAPI.Session
+       Dim objAddrEntries As AddressEntries
+       Dim objAddressEntry As AddressEntry
+       Dim objFilter As AddressEntryFilter
+       Dim strProfileInfo As String
+
+       strProfileInfo = strServer & vbLf & strMailbox
+
+       Set objSession = CreateObject("MAPI.Session")
+       objSession.Logon , , False, False, , True, strProfileInfo
+       Set objAddrEntries = objSession.AddressLists _
+                           ("Global Address List").AddressEntries
+       Set objFilter = objAddrEntries.Filter
+       objFilter.Fields.Add CdoPR_SURNAME, "LastName"
+       objFilter.Fields.Add CdoPR_GIVEN_NAME, "FirstName"
+       On Error Resume Next
+       For Each objAddressEntry In objAddrEntries
+          Debug.Print objAddressEntry.Name
+          Debug.Print "E-address: " & objAddressEntry.Address
+          Debug.Print "Given Name: " & _
+                      objAddressEntry.Fields(CdoPR_GIVEN_NAME).Value
+          Debug.Print "Initials: " & objAddressEntry.Fields _
+                      (CdoPR_INITIALS).Value
+          Debug.Print "Surname: " & objAddressEntry.Fields _
+                      (CdoPR_SURNAME).Value
+          Debug.Print "Display Name: " & objAddressEntry.Fields _
+                      (CdoPR_DISPLAY_NAME).Value
+          Debug.Print "Alias: " & _
+                      objAddressEntry.Fields(CdoPR_ACCOUNT).Value
+          Debug.Print "Title: " & _
+                      objAddressEntry.Fields(CdoPR_TITLE).Value
+          Debug.Print "Company Name: " & objAddressEntry.Fields _
+                      (CdoPR_COMPANY_NAME).Value
+          Debug.Print "Office Location: " & objAddressEntry.Fields _
+                      (CdoPR_OFFICE_LOCATION).Value
+          Debug.Print "Office Phone 1: " &  objAddressEntry.Fields _
+                      (CdoPR_OFFICE_TELEPHONE_NUMBER).Value
+          Debug.Print "Office Phone 2: " & objAddressEntry.Fields _
+                      (CdoPR_OFFICE2_TELEPHONE_NUMBER).Value
+          Debug.Print "Business Fax: " & objAddressEntry.Fields _
+                      (CdoPR_BUSINESS_FAX_NUMBER).Value
+          Debug.Print "Mobile Phone: " & objAddressEntry.Fields _
+                      (CdoPR_MOBILE_TELEPHONE_NUMBER).Value
+          Debug.Print "Pager: " & objAddressEntry.Fields _
+                      (CdoPR_PAGER_TELEPHONE_NUMBER).Value
+          Debug.Print "Assistant: " & objAddressEntry.Fields _
+                      (CdoPR_ASSISTANT).Value
+          Debug.Print "Assistant Phone: " & objAddressEntry.Fields _
+                      (CdoPR_ASSISTANT_TELEPHONE_NUMBER).Value
+          Debug.Print "Home Phone 1: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_TELEPHONE_NUMBER).Value
+          Debug.Print "Home Phone 2: " & objAddressEntry.Fields _
+                      (CdoPR_HOME2_TELEPHONE_NUMBER).Value
+          Debug.Print "Home Fax: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_FAX_NUMBER).Value
+          Debug.Print "Home Street: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_ADDRESS_STREET).Value
+          Debug.Print "Home City: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_ADDRESS_CITY).Value
+          Debug.Print "Home State: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_ADDRESS_STATE_OR_PROVINCE).Value
+          Debug.Print "Home Postal Code: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_ADDRESS_POSTAL_CODE).Value
+          Debug.Print "Home Country: " & objAddressEntry.Fields _
+                      (CdoPR_HOME_ADDRESS_COUNTRY).Value
+          Debug.Print "Manager Name: " & objAddressEntry.Fields _
+                      (CdoPR_MANAGER_NAME).Value
+          Debug.Print "Manager Name: " & objAddressEntry.Manager
+       Next
+       objSession.Logoff
+       Set objFilter = Nothing
+       Set objAddrEntries = Nothing
+       Set objSession = Nothing
+   End Sub
+
+[TIP]HOWTO: Get Windows NT DOMAIN\UserName of Exchange Mailbox Using CDO/VB
+Private Declare Function LookupAccountSid Lib "advapi32.dll" Alias "LookupAccountSidA" ( _
+    ByVal lpSystemName As String, _
+    Sid As Any, _
+    ByVal name As String, _
+    cbName As Long, _
+    ByVal ReferencedDomainName As String, _
+    cbReferencedDomainName As Long, _
+    peUse As Integer _
+) As Long
+
+'This constant is not defined by CDO (1.2, 1.21)
+Const CdoPR_EMS_AB_ASSOC_NT_ACCOUNT = &H80270102
+
+Private Sub Command1_Click()
+  Dim objSession As New MAPI.Session
+  Dim objMessage As MAPI.Message
+  Dim objRecip As MAPI.Recipient
+  Dim bByte() As Byte
+  Dim tmp As Integer
+  Dim i As Integer
+  Dim ret As Boolean
+  Dim strSID As String
+  Dim strName As String
+  Dim strDomain As String
+  
+  'Logon to Session object
+  objSession.Logon
+  
+  'Get a recipient object
+  Set objMessage = objSession.Outbox.Messages.Add
+  Set objMessage.Recipients = objSession.AddressBook(OneAddress:=True)
+  If objMessage.Recipients Is Nothing Then
+    MsgBox "No recipient has been chosen!"
+    objSession.Logoff
+    Exit Sub
+  End If
+  Set objRecip = objMessage.Recipients(1)
+  
+  'Make sure it's a mailbox
+  If Not objRecip.DisplayType = CdoUser Then
+    MsgBox "Selection is not a mailbox owner"
+    GoTo Finish
+  End If
+  
+  'Get the PR_EMS_AB_ASSOC_NT_ACCOUNT (&H80270102) field
+  strSID = objRecip.AddressEntry.Fields(CdoPR_EMS_AB_ASSOC_NT_ACCOUNT).Value
+  
+  'The SID is stored in a hexadecimal representation of the binary SID
+  'so we convert it and store it in a byte array
+  tmp = Len(strSID) / 2 - 1
+  ReDim bByte(tmp) As Byte
+  For i = 0 To tmp - 1
+    bByte(i) = CInt("&h" & Mid(strSID, (i * 2) + 1, 2))
+  Next
+  
+  'Allocate space for the strings so the API won't GPF
+  strName = Space(64)
+  strDomain = Space(64)
+  
+  'Get the NT Domain and UserName
+  'Note: This can't be done from VBScript directly
+  'because VBScript doesn't support making the
+  'LookupAccountSid API call
+  ret = LookupAccountSid(vbNullString, bByte(0), strName, Len(strName), strDomain, Len(strDomain), iType)
+  
+  If ret Then 'Strip the Null characters from the returned strings
+    strDomain = Left(strDomain, InStr(strDomain, Chr(0)) - 1)
+    strName = Left(strName, InStr(strName, Chr(0)) - 1)
+    MsgBox "NT Account: " & strDomain & "\" & strName
+  Else
+    MsgBox "Error calling LookupAccountSID: " & ret
+  End If
+  
+Finish:
+  objSession.Logoff
+  Set objSession = Nothing
+End Sub 
+
+
+[TIP]get windows Directory
+windowsDirectory = Environ$("windir")
+
+
+[TIP]Hide task from task list
+Private Declare Function RegisterServiceProcess Lib "kernel32.dll" (ByVal _
+    dwProcessId As Long, ByVal dwType As Long) As Long
+Private Declare Function GetCurrentProcessId Lib "kernel32.dll" () As Long
+
+Sub ShowInTaskList(ByVal bShowInTaskList As Boolean)
+    RegisterServiceProcess GetCurrentProcessId, IIf(bShowInTaskList, 0, 1))
+End Sub
+
+
+[TIP]quicker than rs.fields(x)
+Dim rs As New ADODB.Recordset
+rs.Open "authors", "DSN=pubs"
+    
+' reference by field's name
+firstName = rs.Collect("au_fname")
+' reference by field's index
+rs.Collect(2) = "John Doe"
+
+
+[TIP]flash a window
+Private Declare Function FlashWindow Lib "user32" (ByVal hWnd As Long, _
+    ByVal bInvert As Long) As Long
+
+Private Sub cmdStartFlashing_Click()
+    ' start the flashing by enabling the timer
+    Timer1.Interval = 1000
+End Sub
+
+Private Sub cmdStopFlashing_Click()
+    ' disable the timer to stop the flashing, and restore regular caption
+    Timer1.Interval = 0
+    FlashWindow Me.hWnd, 0
+End Sub
+
+Private Sub Timer1_Timer()
+    ' toggle the caption status
+    FlashWindow Me.hWnd, 1
+End Sub
+
+
+[TIP]wingdings arrows
+Solid arrows
+Chr$(231) Left Arrow
+Chr$(232) Right Arrow
+Chr$(233) Up Arrow
+Chr$(234) Down Arrow
+Chr$(235) Up-Left Arrow
+Chr$(236) Up-Right Arrow
+Chr$(237) Down-Left Arrow
+Chr$(238) Down-Right Arrow
+
+Outlined arrows
+Chr$(239) Left Arrow
+Chr$(240) Right Arrow
+Chr$(241) Up Arrow
+Chr$(242) Down Arrow
+Chr$(245) Up-Left Arrow [note the gap here]
+Chr$(246) Up-Right Arrow
+Chr$(247) Down-Left Arrow
+Chr$(248) Down-Right Arrow
+
+
+[TIP]lines in a multiline textbox
+Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal _
+    hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, _
+    lParam As Any) As Long
+Const EM_GETLINECOUNT = &HBA
+
+lineCount = SendMessage(Text1.hWnd, EM_GETLINECOUNT, 0, ByVal 0&)
+
+
+[TIP]How to implement hotkeys for text boxes? 
+Create a label with your hotkey. Set the tabindex of the label 
+to one less then the TabIndex of the textbox
+
+[TIP]How to create a textbox that lets you insert tabs? 
+Simply set tabstop on all the controls in a particular form to false.
+
+[TIP]How to make text box that displays "*" when you tpye in (For password purpose)? 
+Just set the PasswordChar property of the text box or rich text box to 
+"*" or your favorite character. 
+
+[TIP]How to create message boxes with those cool red X's? 
+MsgBox "My Message", vbCritical, "My Title"
+
+[TIP]How to format dates so that they look correct in all date and langauge formats? 
+Command1.Caption = Format$(Date, "Short Date")
+
+[TIP]How to compare two strings using wildcards? 
+Dim Mystr As String
+Mystr = "Street"
+If Mystr Like "S*" Then
+    MsgBox "Found"
+Else
+    MsgBox "Not found"
+End If
+
+[TIP]How to create a label that is vertically oriented? 
+Private Sub Form_Activate()
+   Dim s As String
+   Label1.Caption = "RAY'S VB LAND"
+   For i = 1 To Len(Label1)
+     s = s & Mid$(Label1, i, 1) & vbCrLf 
+   Next
+   Label1 = s
+End Sub
+Note: You need to drag the Label1 vertically
+
+[TIP]How to create multi-column combo box? 
+Add Microsoft Forms 2.0 control, there's a combo that 
+supports multicolumns.
+Combo1.Clear
+Combo1.ColumnCount = 2
+Combo1.ListWidth = "6 cm" 'Total width
+Combo1.ColumnWidths = "2 cm;4 cm" 'Column widths
+Combo1.AddItem "Text in column 0"
+Combo1.List(0, 1) = "Text in column 1"
+
+[TIP]How to set the source of one combo to be the contents of another combo? 
+sub comboA_click()
+   comboB.text = comboA.text
+end sub
+If you want the value selected in comboA to be added to the 
+list of choices in comboB, the following code will do it:
+sub comboA_click()
+   comboB.AddItem comboA.text
+end sub
+
+[TIP]How to get ride of the quotation marks when saving strings in a text file? 
+Use the Print # statement instead of the Write # statement. 
+The Print # statement doesn't put quotation marks around your strings.
+
+[TIP]How to include a .wav file in a .exe file? 
+Use a resource file. Include the .wav file as a custom resource. 
+Check the resource files in the help and look at the loadresdata 
+function.
+
+[TIP]How to enable the form close button? 
+dim bCanClose as Boolean
+Then put this into the form's QueryUnload event:
+If bCanClose = false then cancel = true
+
+[TIP]How to add text items with a different color in a Listbox? 
+Use the MSFlexGrid control
+
+[TIP]How to load text file into a Listbox? 
+Statusbar1.Panels(1).Text = "Start"
+
+[TIP]How to change the content of a Statusbar at run time? 
+Private Sub Command1_Click()    
+   Dim StringHold As String    
+   Open "C:\test.txt" For Input As #1    
+   List1.Clear    
+   While Not EOF(1)        
+      Input #1, StringHold        
+      List1.AddItem StringHold    
+   Wend    
+   Close #1
+End Sub
+
+[TIP]How to detect the change in the Textbox? 
+Private bChanged As Boolean
+Private Sub Text1_Change()    
+   bChanged = True
+End SubPrivate 
+Sub Form_Unload(Cancel As Boolean) 
+   If bChanged Then        
+      If Msgbox("Save Changes?", vbYesNo, "Save") = vbYes Then            
+         'Save Changes Here.        
+      End If    
+   End If
+End Sub
+
+[TIP]How to make a menu popup from a Commandbutton? 
+First, create a menu with the menu editor. 
+It should look like this:
+Button Menu (Menu name: mnuBtn, Visible: False - Unchecked)
+....SubMenu Item 1 (Menu name: mnuSub, Index: 0)
+....SubMenu Item 2 (Menu name: mnuSub, Index: 1)
+....SubMenu Item 3 (Menu name: mnuSub, Index: 2)
+....SubMenu Item 4 (Menu name: mnuSub, Index: 3)
+I hope you understand the above. Also create a CommandButton.
+Then add this code:
+Private Sub mnuSub_Click(Index As Integer)
+   Call MsgBox("Menu sub-item " & Index + 1 & " clicked!", _
+               vbExclamation)
+End Sub
+Private Sub Command1_Click()
+   Call PopupMenu(mnuBtn) 
+End Sub
+P.S. For added effect, replace the line:
+Call PopupMenu(mnuBtn) 
+With this one:
+Call PopupMenu(Menu:=mnuBtn, X:=Command1.Left, Y:=Command1.Top + _
+Command1.Height) ' Even more viola!
+Or this one:
+Call PopupMenu(mnuBtn, vbPopupMenuCenterAlign, Command1.Left + _
+(Command1.Width / 2), Command1.Top + Command1.Height) 
+
+[TIP]How to copy the content of text1 into text2? 
+If you have VB6.0 you can use the Replace Function to 
+easily replace any Character(s) with something else, eg.
+Text2 = Replace(Text1, vbCrLf, "
+" & vbCrLf)
+Otherwise, you'll need to step though the Text yourself 
+checking for instances of vbCrLf, e.g.
+code:
+Dim sString As String
+Dim sNewString As Strings
+String = Text1
+While Instr(sString, vbCrLf)    
+   sNewString = sNewString & Left(sString, _
+   Instr(sString, vbCrLf) - 1) & "
+" & vbCrLf    
+   sString = Mid(sString, Instr(sString, vbCrLf) + 2)
+Wend
+Text2 = sNewString
+
+[TIP]How to encrypt text? 
+encryption function :
+Public Function Encrypt(ByVal Plain As String)
+For I=1 To Len(Plain) 
+Letter=Mid(Plain,I,1)
+Mid(Plain,I,1)=Chr(Asc(Letter)+1)
+Next
+Encrypt = Plain
+End Sub
+Public Function Decrypt(ByVal Encrypted As String)
+For I=1 to Len(Encrypted) 
+Letter=Mid(Encrypted,I,1)
+Mid(Encrypted,I,1)=Chr(Asc(Letter)-1)
+Next
+Decrypt = Encrypted
+End Sub
+Print Encrypt("This is just an example")
+Print Decrypt("Uijt!jt!kvtu!bo!fybnqmf")
+
+[TIP]How to create menus at run time? 
+  Dim index As Integer    
+  index = mnuHook.Count    
+  Load mnuHook(index)
+  mnuHook(index).Caption = "New Menu Entry"    
+  mnuHook(index).Visible = True
+'mnuHook is the menu that the new entry appears after
+
+[TIP]How to put 13 X 13 bitmaps into a menu? 
+'Add a picturebox control. 
+'Set 'Autosize' to 'True' with a bitmap (not an Icon) 
+'at a maximum of 13X13. 
+'Place these Declarations in BAS module
+Private Declare Function VarPtr Lib "VB40032.DLL" (variable As Any) As Long
+Private Declare Function GetMenu Lib "user32" (ByVal hwnd As Long) As Long
+Private Declare Function GetSubMenu Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
+Private Declare Function SetMenuItemBitmaps Lib "user32" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long, ByVal hBitmapUnchecked As Long, ByVal hBitmapChecked As Long) As Long
+Const MF_BYPOSITION = &H400&
+'Place this code into the form load event:
+Dim mHandle As Long, lRet As Long, sHandle As Long, sHandle2 As Long
+mHandle = GetMenu(hwnd)
+sHandle = GetSubMenu(mHandle, 0)
+lRet = SetMenuItemBitmaps(sHandle, 0, MF_BYPOSITION, imOpen.Picture, imOpen.Picture)
+lRet = SetMenuItemBitmaps(sHandle, 1, MF_BYPOSITION, imSave.Picture, imSave.Picture)
+lRet = SetMenuItemBitmaps(sHandle, 3, MF_BYPOSITION, imPrint.Picture, imPrint.Picture)
+lRet = SetMenuItemBitmaps(sHandle, 4, MF_BYPOSITION, imPrintSetup.Picture, imPrintSetup.Picture)
+sHandle = GetSubMenu(mHandle, 1)
+sHandle2 = GetSubMenu(sHandle, 0)
+lRet = SetMenuItemBitmaps(sHandle2, 0, MF_BYPOSITION, imCopy.Picture, imCopy.Picture)
+
+[TIP]How to round a number to nearest 10, 100, 1000, etc.? 
+'Example - round to nearest 100
+  Round(RatioBolus * Val(txtDW), 100)
+'Put this in BAS module
+Public Function Round(Dose, Factor)
+'Purpose: Round a dose
+'Input: Dose, Factor (10, 100, 1000, etc)
+'Output: Rounded dose
+  Dim Temp As Single
+  Temp = Int(Dose / Factor)
+  Round = Temp * Factor
+  
+End Function
+
+[TIP]How to shell to web address? 
+'Put this in the click event of a control
+   Dim iRet As Long    
+   Dim Response As Integer
+   Response = MsgBox("You have chosen 'www.rxkinetics.com', " & vbCrLf & "which
+   will launch your web browser and" & vbCrLf & "point you to the Kinetics web _
+       site." & vbCrLf & vbCrLf & "Do you wish to continue?", vbInformation + _
+   vbYesNo, "www.rxkinetics.com")
+   Select Case Response
+     Case vbYes
+         iRet = Shell("start.exe http://www.rxkinetics.com", vbNormal)
+     Case vbNo
+       Exit Sub
+   End Select
+
+[TIP]How to perform generic error handling routine? 
+'Begin error handle code
+On Error GoTo ErrHandler
+'Insert code to be checked
+'Stop error trapping & exit function
+  On Error GoTo 0
+  Exit Function
+ErrHandler:
+  Dim strErr As String
+  strErr = "Error " & Err.Number & " " & Err.Description 
+  MsgBox strErr, vbCritical + vbOK, "Error message"
+
+[TIP]How to check for 4-digit year date? 
+Public Function ValidDate(MDate)
+'Purpose: Check for 4 digit yyyy DATE
+'Input:   String from text box
+'Output:  True or False
+'Default is false
+  ValidDate = False
+'Exit if length less than "m/d/yyyy"
+  If Len(MDate) < 8 Then Exit Function
+  
+'Exit if not a valid date wrong
+  If IsDate(MDate) = False Then Exit Function
+  
+'Exit if not ending or starting with "yyyy"
+  Dim StartDate As String
+  Dim EndDate As String
+  
+  EndDate = Right(MDate, 4)
+  StartDate = Left(MDate, 4)
+  
+  If ValidChar(EndDate, "0123456789") = False And _
+     ValidChar(StartDate, "0123456789") = False Then Exit Function
+    
+'Set to true if it passes all these tests!
+  ValidDate = True
+End Function
+
+[TIP]How to calculate the age based on date of birth? 
+'Convert text to Date
+  Dim Birth as Date
+  Birth = DateValue(txtDOB)
+'Calculate age
+  Dim Age as Integer
+  Age = Int(DateDiff("D", Birth, Now) / 365.25)
+
+[TIP]How to tell the difference between CDbl and Val function? 
+print Val("12345")
+12345
+print Val("12,345")
+12
+print CDbl("12,345")
+12345
+print CDbl("12345")
+12345
+
+[TIP]How to code Toolbar click events? 
+Private Sub Toolbar1_ButtonClick(ByVal Button As Button)
+'Handle button clicks
+  Select Case Button.Key
+    Case Is = "Exit"
+     'If user clicks the No button, stop Exit
+
+[TIP]Msgbox tips
+If MsgBox("Do you want to exit?", vbQuestion + vbYesNo  + _
+   vbDefaultButton2, "Exiting Code Bank") = vbNo Then Exit Sub
+       Call ExitProgram
+    Case Is = "Repair"
+       Call Repairdb
+    Case Is = "Delete"
+       Call DeleteRoutine
+    Case Is = "Edit"
+       Call EditRoutine
+    Case Is = "New"
+       Call NewRoutine
+    Case Is = "Copy"
+       Call CopyToClipboard
+    Case Is = "Help"
+       Call ShowHelpContents
+  End Select
+ 
+End Sub
+
+[TIP]How to copy text to the clipboard? 
+'First clear the clipboard
+  Clipboard.Clear
+'Select Text in txtBox & copy to clipboard
+  Clipboard.SetText txtBox.Text, vbCFText
+
+[TIP]How to copy text from the clipboard? 
+'Select Text in txtBox & copy from clipboard
+   txtBox.SelText = Clipboard.GetText 
+'Or replace entire text
+   txtBox.Text = Clipboard.GetText
+
+[TIP]How to use Undo function for Textbox or Combobox? 
+'Windows API provides an undo function
+     
+'Do the following declares:
+  Declare Function SendMessage Lib "User" (ByVal hWnd As _
+     Integer, ByVal wMsg As Integer, ByVal wParam As _
+     Integer, lParam As Any) As Long
+  Global Const WM_USER = &h400
+  Global Const EM_UNDO = WM_USER + 23
+     
+'And in your Undo Sub do the following:
+  UndoResult = SendMessage(myControl.hWnd, EM_UNDO, 0, 0)
+ 'UndoResult = -1 indicates an error.
+
+[TIP]How to toggle between Insert & Overwrite in a text box? 
+1.  Put a label on the form called 'lblOVR'
+2.  Put this code in KeyUp event of Form
+  Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+     If KeyCode = vbKeyInsert Then
+       If lblOVR = "Over" Then
+         lblOVR = "Insert"
+       Else
+         lblOVR = "Over"
+       End If
+     End If
+  End Sub
+3.  Put this code in KeyPress event of Text Box
+  Private Sub txtText_KeyPress(KeyAscii As Integer)
+   'Exit if already selected
+    If txtText.SelLength > 0 Then Exit Sub
+  
+    If lblOVR = "Over" Then
+       If KeyAscii <> 8 And txtText.SelLength = 0 Then
+          txtText.SelLength = 1   '8=backspace
+       End If
+    Else
+       txtText.SelLength = 0
+    End If
+  End Sub
+
+[TIP]How to use the advanced feature of MsgBox? 
+'This method works well, unless you need to save the 
+'answer from your Select Case for later use. If you do, 
+'you'll need to use the more standard form of 
+'prompting for the answer in a variable. 
+  Select Case MsgBox("Would you like to save the file somefile.txt?", _
+  vbApplicationModal + vbQuestion + YesNoCancel, App.Title)
+  Case vbYes
+     'Save then file
+  Case vbNo
+     'Do something for No
+  Case vbCancel
+     'Do something else for Cancel
+End Select
+'If only need yes/no answer then this code may
+'work better
+   If MsgBox("Do you really want to exit Code Bank?", _
+   vbQuestion + vbYesNo + vbDefaultButton2, "Exiting Code Bank") = vbNo Then Exit Sub
+
+[TIP]How to capture keys pressed to use as keyboard shortcuts? 
+'Set the KeyPreview Property of the form to True
+'Put this code in the KeyDown even of the form
+'Look up Key code constants in VB help for other key codes
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+  'Capture Alt key
+   Dim AltDown
+   AltDown = (Shift And vbAltMask) > 0
+  'Alt + A = Shortcut for AddNew    
+   If AltDown And KeyCode = vbKeyA Then   ' A = Add
+      Data1.Recordset.AddNew
+   End If
+End Sub
+
+[TIP]How to call a Command button without clicking it? 
+cmdCommand = True
+
+[TIP]How to make Crystal Reports run faster? 
+If Crystal Reports' speed is lacking although your report contains no large 
+graphics or large numbers of groups, change these two lines in your CRW.INI 
+file to solve disk swapping problems: 
+MaxRecordMemory=0
+MetapageSpillLimit=100
+
+[TIP]How to fix the problem of playing the .wav file only once? 
+Always include the "Close" statement before "Open"
+MMControl1.Command = "Close"
+MMControl1.Filename = "C:\1.mid"
+MMControl1.Command = "Open"
+MMControl1.Command = "Play"
+
+[TIP]How to show a modeless form? 
+frmPass.Show vbModeless
+
+[TIP]How to show a modal form? 
+frmPass.Show vbModal
+
+[TIP]How to change the button's foreground color? 
+To use the Microsoft Control: Microsoft Forms 2.0 Object Library
+
+[TIP]How to change the mouse pointer? 
+Screen.MousePointer = 0 'Default
+Screen.MousePointer = 11 'Hourglass
+
+[TIP]How to use SetAttr function? 
+SetAttr "C:\data.txt", vbNormal
+SetAttr "C:\data.txt", vbReadOnly
+
+[TIP]How to add something to an existing file by overwriting it? 
+Open "C:\data.txt" For output As #1
+Do While Not EOF(1)
+Print #1, "Overwrite the file!"
+Close #1
+
+[TIP]How to add something to an existing file (with data)? 
+Open "C:\data.txt" For append As #1
+Do While Not EOF(1)
+Print #1, "Append Something!"
+Close #1
+
+[TIP]How to read a file character by character? 
+Do While Not EOF(1)
+   myChar = Input(1, #1) 'one char a line
+   WholeWord = WholeWord & myChar
+Loop
+
+[TIP]How to search Listboxes as you type? 
+By changing the SendMessage Function's "ByVal wParam as Long" to 
+"ByVal wParam as String", we change the search ability from first 
+letter only, to "change-as-we-type" searching. 
+Here's some example code. Start a new Standard EXE project and add 
+a ListBox (List1) and a TextBox (Text1), then paste in the 
+following code : 
+option Explicit
+'Start a new Standard-EXE project.
+'Add a textbox and a listbox control to form 1
+'Add the following code to form1:
+private Declare Function SendMessage Lib "User32" Alias "SendMessageA" 
+(byval hWnd as Long, byval wMsg as Integer, byval wParam as string, 
+lParam as Any) as Long
+Const LB_FINDSTRING = &H18F
+private Sub Form_Load()
+With List1
+    .Clear
+    .AddItem "RAM"
+    .AddItem "rams"
+    .AddItem "RAMBO"
+    .AddItem "ROM"
+    .AddItem "Roma"
+    .AddItem "Rome"
+    .AddItem "Rommel"
+    .AddItem "Cache"
+    .AddItem "Cash"
+End With
+End Sub
+private Sub Text1_Change()
+    List1.ListIndex = SendMessage(List1.hWnd, LB_FINDSTRING, Text1,     
+byval Text1.Text)
+End Sub
+
+[TIP]How to get the Number of Lines In a TextBox? 
+This method is straightforward: it uses SendMessage to retrieve the 
+number of lines in a textbox. A line to this method is defined as a 
+new line after a word-wrap; it is independent of the number of hard 
+returns in the text.
+Declarations                     
+Public Declare Function SendMessageLong Lib "user32" Alias 
+"SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long,ByVal 
+wParam As Long, ByVal lParam As Long) As Long
+Public Const EM_GETLINECOUNT = &HBA 
+The Code                             
+Sub Text1_Change()
+    Dim lineCount as Long
+    On Local Error Resume Next
+  
+  'get/show the number of lines in the edit control
+    lineCount = SendMessageLong(Text1.hwnd, EM_GETLINECOUNT, 0&, 0&)
+    Label1 = Format$(lineCount, "##,###")
+End Sub 
+Special Note                    
+The textbox passed to the SendMessage API must have its multiline 
+property set to true at design time. The EM_GETLINECOUNT message 
+does not pass additional parameters to the API in the wParam or lParam 
+variables. These must be 0. 
+
+[TIP]How to get rid of leading zeros in strings? 
+Function KillZeros(incoming as string) as string 
+   KillZeros = CStr(CInt(incoming)) 
+End Function 
+
+[TIP]How to use Mid function? 
+Dim MyString, FirstWord, LastWord, MidWords
+MyString = "Mid Function Demo"	' Create text string.
+FirstWord = Mid(MyString, 1, 3)	' Returns "Mid".
+LastWord = Mid(MyString, 14, 4)	' Returns "Demo".
+MidWords = Mid(MyString, 5)	' Returns "Function Demo".
+
+[TIP]How to use Left function? 
+Dim AnyString, MyStr
+AnyString = "Hello World"	' Define string.
+MyStr = Left(AnyString, 1)	' Returns "H".
+MyStr = Left(AnyString, 5)	' Returns " Hello".
+
+[TIP]How to use Right function? 
+Dim AnyString, MyStr
+AnyString = "Hello World"	' Define string.
+MyStr = Right(AnyString, 1)	' Returns "d".
+MyStr = Right(AnyString, 6)	' Returns " World".
+MyStr = Right(AnyString, 20)	' Returns "Hello World".
+
+[TIP]How to use LTrim, RTrim, and Trim Functions? 
+Dim MyString, TrimString
+MyString = "  <-Trim->  "	' Initialize string.
+TrimString = LTrim(MyString)	' TrimString = "<-Trim->  ".
+TrimString = RTrim(MyString)	' TrimString = "  <-Trim->".
+TrimString = LTrim(RTrim(MyString))	' TrimString = "<-Trim->".
+' Using the Trim function alone achieves the same result.
+TrimString = Trim(MyString)	' TrimString = "<-Trim->".
+
+[TIP]How to use Len function? 
+Dim MyString
+MyString = "Hello World"	' Initialize variable.
+MyLen = Len(MyString)	' Returns 11.
+
+[TIP]How to add records in the database? 
+Private dbCurrent As Database
+Private recCategories As Recordset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
